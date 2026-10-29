@@ -1592,7 +1592,12 @@ function onListClick(e) {
   if (e.target.closest('.del')) return deleteTask(li.dataset.id);
   const more = e.target.closest('.more');
   if (more) { const r = more.getBoundingClientRect(); return openTaskMenu(li.dataset.id, r.right - 210, r.bottom + 4); }
-  if (e.target.closest('.body')) openSheet(li.dataset.id);
+  if (e.target.closest('.body')) {
+    openSheet(li.dataset.id);
+    // Laptop: the cursor is in the title, ready to type (on the phone the keyboard would cover the task)
+    const t = !TOUCH.matches && sheetBody.querySelector('.sh-title');
+    if (t) { t.focus({ preventScroll: true }); t.setSelectionRange(t.value.length, t.value.length); }
+  }
 }
 ['#list', '#inbox'].forEach(s => {
   $(s).addEventListener('change', onListChange);
@@ -2302,7 +2307,7 @@ sheetBody.addEventListener('keydown', e => {
     if (wasFull) setFull(true);   // stay full screen for the next task
     return;
   }
-  if (el.dataset.f === 'text' && e.key === 'Enter') { e.preventDefault(); finishTitle(); el.blur(); }
+  if (el.dataset.f === 'text' && e.key === 'Enter') { e.preventDefault(); finishTitle(); el.blur(); closeSheet(); }   // Enter: save and close
   if (el.classList.contains('sub-text') && e.key === 'Enter') { e.preventDefault(); el.blur(); }
   if (el.classList.contains('sub-new') && e.key === 'Enter') {
     e.preventDefault();
