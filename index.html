@@ -269,6 +269,8 @@ button { cursor: pointer; }
 .add-line:hover .hover-txt { display: inline; }
 .add-line:hover .idle-txt { display: none; }
 .inline-add { list-style: none; }
+.inline-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 2px 0; }
+.inline-chips:empty { display: none; }
 .inline-add input {
   width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--accent); background: var(--panel);
   box-shadow: 0 0 0 4px var(--accent-soft); outline: 0; font-size: 15px;
@@ -290,6 +292,7 @@ button { cursor: pointer; }
 .chip.cat { background: var(--c); color: var(--tag-text); }
 .chip.bad { color: var(--danger); background: var(--danger-soft); }
 .chip.warn { color: var(--warn); background: var(--warn-soft); }
+.chip.time { font-weight: 600; color: var(--text); }
 .chip.p1 { color: var(--p1); font-weight: 600; background: transparent; padding-left: 0; }
 .chip.p2 { color: var(--p2); font-weight: 600; background: transparent; padding-left: 0; }
 .chip.p3 { color: var(--p3); font-weight: 700; background: transparent; padding-left: 0; }
@@ -363,7 +366,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .sheet.compact { height: auto; min-height: 0; max-height: 50dvh; }
 .sheet.compact .sheet-body { padding-bottom: 14px; }
 .more-details { margin: -12px 0 0 4px; }
-.sh-added { color: var(--done); font-size: 13px; font-weight: 600; margin: -4px 0 8px 34px; }
+.sh-added { color: var(--done); font-size: 13px; font-weight: 600; margin: -4px 0 8px; }
 .sh-ai { flex: none; border: 0; border-radius: 10px; width: 34px; height: 34px; display: grid; place-items: center; background: var(--accent-soft); }
 .sheet-handle { width: 44px; height: 5px; border-radius: 9px; background: var(--line); margin: 10px auto 0; flex: none; }
 .sheet-top { display: flex; align-items: center; justify-content: space-between; padding: 4px 14px 0; position: relative; flex: none; }
@@ -374,10 +377,18 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .sh-card { background: var(--bg); border-radius: 16px; padding: 14px 16px 6px; margin-bottom: 14px; }
 .sh-title-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
 .sh-title-row .check { width: 22px; height: 22px; margin-top: 4px; }
-.sh-title {
-  flex: 1; border: 0; background: transparent; resize: none; font-size: 21px; font-weight: 600; line-height: 1.35;
-  outline: 0; padding: 0; overflow: hidden; letter-spacing: -.01em;
+.sh-title-wrap { position: relative; flex: 1; min-width: 0; }
+.sh-title, .sh-title-hl {
+  font-size: 21px; font-weight: 600; line-height: 1.35; letter-spacing: -.01em; padding: 0; margin: 0;
+  white-space: pre-wrap; overflow-wrap: break-word;
 }
+.sh-title {
+  position: relative; display: block; width: 100%; border: 0; background: transparent; resize: none; outline: 0; overflow: hidden;
+  color: transparent; -webkit-text-fill-color: transparent; caret-color: var(--text);   /* the text is drawn by .sh-title-hl */
+}
+.sh-title::placeholder { color: var(--muted); -webkit-text-fill-color: var(--muted); }
+.sh-title-hl { position: absolute; inset: 0; pointer-events: none; color: var(--text); }
+.sh-title-hl mark { background: var(--c, var(--hover)); color: var(--tag-text); border-radius: 5px; box-shadow: 0 0 0 2px var(--c, var(--hover)); }
 .sh-field { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .sh-field label { width: 76px; color: var(--muted); font-size: 13.5px; }
 .sh-field input, .sh-field select {
@@ -444,7 +455,8 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 5px 10px; font-size: 13.5px;
 }
 .prop-pop button.q:hover { border-color: var(--accent); background: var(--accent-soft); }
-.prop-pop input[type="date"] { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 5px 8px; width: 100%; }
+.prop.time { font-weight: 600; }
+.prop-pop input[type="date"], .prop-pop input[type="time"] { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 5px 8px; width: 100%; }
 .prop-pop .cat-pick { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: none; padding: 6px 8px; border-radius: 8px; text-align: left; font-size: 14px; }
 .prop-pop .cat-pick:hover { background: var(--hover); }
 .prop-pop .cat-pick.child { padding-left: 24px; }
@@ -736,6 +748,63 @@ function classifyTokens(raw, cats, today) {
   return out;
 }
 
+// Typing without "/": a finished word (or two) becomes a label.
+const DAY_WORDS = { today: 0, td: 0, tomorrow: 1, tmr: 1, tmrw: 1 };
+const FULL_DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+// "td", "tmr", "thu", "thursday", "weekend", "15.11", "15/11" -> date key, or null
+function dayWord(w, today) {
+  w = w.toLowerCase();
+  if (w in DAY_WORDS) return addDays(today, DAY_WORDS[w]);
+  if (w === 'weekend') return parseDate('sat', today);
+  const fi = FULL_DAYS.indexOf(w);
+  if (fi >= 0) w = DAY_NAMES[fi];
+  if (DAY_NAMES.includes(w)) return parseDate(w, today);
+  return /^\d{1,2}[./]\d{1,2}([./]\d{2}|[./]\d{4})?$/.test(w) ? parseDate(w, today) : null;
+}
+// "20:00", "20.00", "8:30", "8pm", "8:30pm", "8am", "20h", "20h30" -> "20:00", or null
+function timeWord(w) {
+  w = w.toLowerCase();
+  let m, h, min;
+  if ((m = w.match(/^(\d{1,2})(?:[:.](\d{2}))?(am|pm)$/))) {
+    if (+m[1] < 1 || +m[1] > 12) return null;
+    h = +m[1] % 12 + (m[3] === 'pm' ? 12 : 0); min = +(m[2] || 0);
+  } else if ((m = w.match(/^(\d{1,2})[:.](\d{2})$/) || w.match(/^(\d{1,2})h(\d{2})?$/))) {
+    h = +m[1]; min = +(m[2] || 0);
+  } else return null;
+  return h < 24 && min < 60 ? pad(h) + ':' + pad(min) : null;
+}
+// The label that the finished word(s) right before the caret stand for: { start, field, value }, or null.
+// "before" is the text up to the caret, without the space just typed.
+function wordLabel(before, cats, today) {
+  const low = before.toLowerCase();
+  // Tag names, also with spaces ("Personal Finance"), longest first
+  for (const c of [...cats].sort((a, b) => b.name.length - a.name.length)) {
+    const n = c.name.toLowerCase();
+    if (n && low.endsWith(n) && /(^|[\s/])$/.test(low.slice(0, low.length - n.length))) {
+      const start = before.length - n.length;
+      return { start: before[start - 1] === '/' ? start - 1 : start, field: 'category', value: c.id };
+    }
+  }
+  let m = before.match(/(^|\s)(\/?(?:deadline|dl|due)\s+(\S+))$/i);
+  if (m) {
+    const d = dayWord(m[3], today);
+    if (d) return { start: before.length - m[2].length, field: 'deadline', value: d };
+  }
+  m = before.match(/(^|\s)(next\s+week)$/i);
+  if (m) return { start: before.length - m[2].length, field: 'doDay', value: parseDate('mon', today) };
+  m = before.match(/(^|\s)(\S+)$/);
+  if (!m) return null;
+  const tok = m[2], w = tok.replace(/^\//, ''), start = before.length - tok.length;
+  if (/^!{1,3}$/.test(tok)) return { start, field: 'priority', value: tok.length };
+  if (/^(nd|inbox)$/i.test(w)) return { start, field: 'doDay', value: null };
+  const d = dayWord(w, today);
+  if (d) return { start, field: 'doDay', value: d };
+  const t = timeWord(w);
+  if (t) return { start, field: 'time', value: t };
+  const c = tok[0] === '/' && w && findCategory(w, cats);   // old "/tag" shortcut
+  return c ? { start, field: 'category', value: c.id } : null;
+}
+
 // Reads the shortcuts out of a typed task line. defaultDay is used when no day shortcut is typed.
 function parseInput(raw, cats, today, defaultDay = today) {
   const out = { text: '', doDay: defaultDay, deadline: null, priority: 0, category: null };
@@ -778,7 +847,7 @@ function toGoogle(t, cats) {
   const c = t.category && cats.find(x => x.id === t.category);
   const pri = ['', 'Important', 'Very important', 'Most important'][t.priority || 0];
   const d = t.deadline ? t.deadline.split('-') : null;
-  const notes = [pri && 'Priority: ' + '!'.repeat(t.priority) + ' ' + pri, d && 'Deadline: ' + d[2] + '/' + d[1],
+  const notes = [t.time && 'Time: ' + t.time, pri && 'Priority: ' + '!'.repeat(t.priority) + ' ' + pri, d && 'Deadline: ' + d[2] + '/' + d[1],
                  (t.description || '').trim()].filter(Boolean).join('\n');
   return { title: (c ? c.name + ' · ' : '') + t.text, notes, due: t.doDay + 'T00:00:00.000Z',
            status: t.done ? 'completed' : 'needsAction' };
@@ -795,6 +864,8 @@ function applyGoogle(t, g, cats) {
   t.doDay = g.due ? g.due.slice(0, 10) : null;
   // Priority and deadline are in the notes, as toGoogle writes them ("Priority: !! …", "Deadline: 20/11")
   const notes = g.notes || '';
+  const time = notes.match(/^Time: (\d{2}:\d{2})/m);
+  t.time = time ? time[1] : null;
   const pri = notes.match(/^Priority: (!{1,3})/m);
   t.priority = pri ? pri[1].length : 0;
   const dl = notes.match(/^Deadline: (\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/m);
@@ -1073,8 +1144,10 @@ function dayLabel(k) {
   const diff = daysBetween(todayKey(), k), name = DAY_FULL[fromKey(k).getDay()];
   return (diff === 0 ? 'Today ' : diff === 1 ? 'Tomorrow ' : '') + fmt(k) + ' · ' + name;
 }
+// Tasks with a time come first in their day, earliest first
+const byTime = (a, b) => a.time && b.time ? a.time.localeCompare(b.time) : a.time ? -1 : b.time ? 1 : 0;
 const byDayThenPriority = (a, b) =>
-  (a.doDay || '9999').localeCompare(b.doDay || '9999') || b.priority - a.priority || a.createdAt - b.createdAt;
+  (a.doDay || '9999').localeCompare(b.doDay || '9999') || byTime(a, b) || b.priority - a.priority || a.createdAt - b.createdAt;
 const byPriority = (a, b) => b.priority - a.priority || a.createdAt - b.createdAt;
 
 // The selected tag is also the filter.
@@ -1298,6 +1371,7 @@ $('#ctx').addEventListener('keydown', e => {
 function taskChips(t, showDay) {
   const T = todayKey(), chips = [];
   const overdue = !t.done && t.doDay && t.doDay < T;
+  if (t.time) chips.push(`<span class="chip time">${t.time}</span>`);
   if (t.priority) chips.push(`<span class="chip p${t.priority}">${'!'.repeat(t.priority)} ${PRI[t.priority]}</span>`);
   if (showDay) {
     chips.push(t.doDay
@@ -1346,7 +1420,7 @@ function taskHtml(t, o = {}) {
 
 function addLineHtml(day, empty) {
   if (inlineDay === day) {
-    return `<li class="inline-add"><input class="inline-input" data-day="${day}" placeholder="New task for ${esc(dayText(day))}… (Enter to add, Esc to close)" autocomplete="off"></li>`;
+    return `<li class="inline-add"><input class="inline-input" data-day="${day}" placeholder="New task for ${esc(dayText(day))}… (Enter to add, Esc to close)" autocomplete="off"><div class="inline-chips"></div></li>`;
   }
   return empty
     ? `<li><button class="add-line" data-add="${day}">${icon('plus')}<span class="idle-txt">No tasks</span><span class="hover-txt">Add task</span></button></li>`
@@ -1396,11 +1470,23 @@ function render() { renderLeft(); renderTagBar(); renderMiddle(); renderInbox();
 const findTask = id => data.tasks.find(t => t.id === id) || (draft && draft.id === id ? draft : undefined);
 const whereText = t => !t.doDay ? 'Inbox' : dayText(t.doDay);
 const newTask = p => ({ id: uid(), text: p.text, doDay: p.doDay, deadline: p.deadline, priority: p.priority,
-                        category: p.category, done: false, createdAt: Date.now(), doneAt: null });
+                        category: p.category, done: false, createdAt: Date.now(), doneAt: null, ...(p.time ? { time: p.time } : {}) });
 
 // "+ Add task" under a day: that day is the default, the selected tag is used if none is typed
+// What a "+ Add task" box understood so far, as chips under it
+function showInlineLabels(el) {
+  const s = labelFields(titleLabels(el.value, false)), c = s.category && catById(s.category);
+  el.nextElementSibling.innerHTML = [
+    'doDay' in s && `<span class="chip">${s.doDay ? icon('calendar') + ' ' + dayText(s.doDay) : icon('inbox') + ' Inbox'}</span>`,
+    s.time && `<span class="chip time">${s.time}</span>`,
+    s.deadline && `<span class="chip warn">${icon('alarm')} Deadline ${fmt(s.deadline)}</span>`,
+    s.priority && `<span class="chip p${s.priority}">${'!'.repeat(s.priority)} ${PRI[s.priority]}</span>`,
+    c && `<span class="chip cat" style="--c:${c.color}"># ${esc(catPath(c.id))}</span>`,
+  ].filter(Boolean).join('');
+}
 function addInline(el) {
-  const p = parseInput(el.value, data.categories, todayKey(), el.dataset.day);
+  const hits = titleLabels(el.value, true);
+  const p = { doDay: el.dataset.day, deadline: null, priority: 0, category: null, ...labelFields(hits), text: cleanTitle(el.value, hits) };
   if (!p.text) return;
   if (!p.category) p.category = activeTag();
   const t = newTask(p);
@@ -1464,8 +1550,13 @@ function onListClick(e) {
     const el = $(`${s} .sub-inline-new[data-tid="${tid}"]`); if (el) el.focus();
   });
 });
+$('#list').addEventListener('input', e => {
+  const el = e.target;
+  if (el.classList.contains('inline-input')) showInlineLabels(el);
+});
 $('#list').addEventListener('keydown', e => {
   if (!e.target.classList.contains('inline-input')) return;
+  if (plainLastLabel(e)) return;
   if (e.key === 'Enter') { e.preventDefault(); addInline(e.target); }
   if (e.key === 'Escape') { inlineDay = null; renderMiddle(); }
 });
@@ -1632,6 +1723,63 @@ document.addEventListener('drop', e => {
   moveTask(dragId, zone.dataset.drop);
 });
 
+/* ---------- Typing without "/": "tmr", "8pm", "deadline 20.11", "CRMaM", "!!" become labels ---------- */
+// The words stay in the title, coloured, until you finish (Enter); then they leave the title.
+const PLAIN = '⁠';   // invisible mark after a word that stays text (⌫ right after a label)
+// Labels in a title: words with a space after them, and with atEnd also the last word
+function titleLabels(text, atEnd) {
+  const hits = [], T = todayKey();
+  for (const m of text.matchAll(/\S+/g)) {
+    const end = m.index + m[0].length;
+    if (!atEnd && end === text.length) continue;   // this word is still being typed
+    const hit = wordLabel(text.slice(0, end), data.categories, T);
+    if (!hit) continue;
+    hit.end = end;
+    while (hits.length && hit.start < hits[hits.length - 1].end) hits.pop();   // "deadline 20.11" replaces "20.11"
+    hits.push(hit);
+  }
+  return hits;
+}
+const labelFields = hits => Object.fromEntries(hits.map(h => [h.field, h.value]));   // a later word wins
+function cleanTitle(text, hits) {
+  for (const h of [...hits].reverse()) text = text.slice(0, h.start) + text.slice(h.end);
+  return text.replaceAll(PLAIN, '').replace(/\s+/g, ' ').trim();
+}
+// Words of one field stay text from now on (that field was changed with its button)
+function plainField(text, f) {
+  for (const h of titleLabels(text, false).filter(h => h.field === f).reverse()) text = text.slice(0, h.end) + PLAIN + text.slice(h.end);
+  return text;
+}
+// Words already in a saved title stay text; only newly typed words become labels
+function plainAll(text) {
+  for (const h of titleLabels(text, true).reverse()) text = text.slice(0, h.end) + PLAIN + text.slice(h.end);
+  return text;
+}
+// ⌫ right after "tmr " turns the coloured "tmr" back into text
+function plainLastLabel(e) {
+  const el = e.target, pos = el.selectionStart, v = el.value;
+  if (e.key !== 'Backspace' || pos !== el.selectionEnd || !/\s/.test(v[pos - 1] || '')) return false;
+  const hit = titleLabels(v.slice(0, pos), false).pop();
+  if (!hit || hit.end !== pos - 1) return false;
+  e.preventDefault();
+  el.value = v.slice(0, pos - 1) + PLAIN + v.slice(pos);
+  el.setSelectionRange(pos, pos);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  return true;
+}
+// Coloured labels drawn behind the title's text
+function highlightTitle(el, hits) {
+  const hl = el.previousElementSibling;
+  if (!hl || !hl.classList.contains('sh-title-hl')) return;
+  let h = '', at = 0;
+  for (const x of hits) {
+    const c = x.field === 'category' && catById(x.value);
+    h += esc(el.value.slice(at, x.start)) + `<mark${c ? ` style="--c:${c.color}"` : ''}>${esc(el.value.slice(x.start, x.end))}</mark>`;
+    at = x.end;
+  }
+  hl.innerHTML = h + esc(el.value.slice(at)) + ' ';
+}
+
 /* ---------- Tag row above the tasks ---------- */
 function previewChips(p) {
   const chips = [`<span class="chip">${p.doDay ? icon('calendar') + ' ' + dayText(p.doDay) : icon('inbox') + ' Inbox'}</span>`];
@@ -1688,10 +1836,25 @@ const titleEl = () => sheetBody.querySelector('.sh-title');
 
 function currentToken() {
   const el = titleEl(), v = el.value, pos = el.selectionStart;
-  const m = v.slice(0, pos).match(/(^|\s)(\/\S*)$/);
+  const m = v.slice(0, pos).match(/(^|\s)(\S+)$/);
   if (!m) return null;
-  const after = v.slice(pos).match(/^\S*/)[0];
-  return { start: pos - m[2].length, end: pos + after.length, q: m[2].slice(1).toLowerCase() };
+  const after = v.slice(pos).match(/^\S*/)[0], slash = m[2][0] === '/';
+  return { start: pos - m[2].length, end: pos + after.length, q: (slash ? m[2].slice(1) : m[2]).toLowerCase(), slash };
+}
+// Words that become labels, for the list shown while typing (from the 2nd letter, only names that start like it)
+function wordSuggestions(q) {
+  const T = todayKey();
+  const words = [
+    ...orderedCats().map(c => ({ ins: c.name, label: c.name, desc: '# ' + catPath(c.id), color: c.color })),
+    { ins: 'today', label: 'today', desc: 'Do day · ' + dayText(T) },
+    { ins: 'tomorrow', label: 'tomorrow', desc: 'Do day · ' + dayText(addDays(T, 1)) },
+    ...FULL_DAYS.map((d, i) => ({ ins: d, label: d, desc: 'Do day · ' + dayText(parseDate(DAY_NAMES[i], T)) })),
+    { ins: 'weekend', label: 'weekend', desc: 'Do day · ' + dayText(parseDate('sat', T)) },
+    { ins: 'next week', label: 'next week', desc: 'Do day · ' + dayText(parseDate('mon', T)) },
+    { ins: 'deadline ', label: 'deadline', desc: 'then a date or day, e.g. deadline 20.11' },
+    { ins: 'inbox', label: 'inbox', desc: 'No day → Inbox' },
+  ];
+  return words.filter(s => s.label.toLowerCase().startsWith(q) && s.label.toLowerCase() !== q);
 }
 
 function buildSuggestions(q) {
@@ -1712,9 +1875,9 @@ function buildSuggestions(q) {
 }
 
 function showSuggest() {
-  const tok = isDraft() && titleEl() && currentToken();
-  if (!tok || /^dl\S/.test(tok.q)) return hideSuggest();
-  suggestions = buildSuggestions(tok.q);
+  const tok = sheetId && titleEl() && document.activeElement === titleEl() && currentToken();
+  if (!tok || /^dl\S/.test(tok.q) || (!tok.slash && tok.q.length < 2)) return hideSuggest();
+  suggestions = tok.slash ? buildSuggestions(tok.q) : wordSuggestions(tok.q);
   if (!suggestions.length) return hideSuggest();
   selIndex = Math.min(selIndex, suggestions.length - 1);
   suggestEl.innerHTML = suggestions.map((s, i) =>
@@ -1743,9 +1906,9 @@ function pickSuggestion(i) {
   el.focus();
   hideSuggest();
   autoGrow(el);
-  readDraftTitle(el.value);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
 }
-$('#sheetBody').addEventListener('focusout', e => { if (e.target.matches('.sh-title')) setTimeout(hideSuggest, 150); });
+$('#sheetBody').addEventListener('focusout', e => { if (e.target.matches('.sh-title')) { finishTitle(); setTimeout(hideSuggest, 150); } });
 suggestEl.addEventListener('mousedown', e => {
   const li = e.target.closest('li'); if (!li) return;
   e.preventDefault(); pickSuggestion(+li.dataset.i);
@@ -1805,7 +1968,7 @@ const editing = fn => isDraft() ? fn() : change(fn);
 
 function openSheet(id) {
   if (!findTask(id)) return;
-  sheetId = id; propOpen = null;
+  sheetId = id; propOpen = null; sheetBase = baseOf(findTask(id));
   if (doneOpen) { doneOpen = false; renderLeft(); }
   $('[data-sh="more"]').hidden = false;
   $('#moreMenu').hidden = true;
@@ -1815,10 +1978,10 @@ function openSheet(id) {
 }
 function closeSheet() {
   if (!sheetId && !doneOpen) return;
-  flushText();
+  finishTitle(); flushText();
   if (isDraft()) {
-    const p = parseInput(draft.text, data.categories, todayKey());
-    if (p.text) return askSaveDraft(p.text);
+    const name = cleanTitle(draft.text, titleLabels(draft.text, true));
+    if (name) return askSaveDraft(name);
     draft = null;
   }
   hideSuggest();
@@ -1832,16 +1995,15 @@ function refreshSheet() { if (sheetId) findTask(sheetId) ? renderSheet() : close
 
 /* ---------- New task in the panel (round + button, or A A) ---------- */
 let draft = null;      // the new task being written, saved with Enter
-let draftLast = {};    // shortcuts last read from the title, so a button changed by hand is not overwritten
 let draftMore = false; // phone: "More details" shows description and sub-tasks
 let draftNote = '';    // "✓ Added to …" under the title after Enter, so you see it was saved
 
 function openNewTask(note = '') {
   flushText();
   draftNote = note;
-  draft = { id: uid(), text: '', doDay: todayKey(), deadline: null, priority: 0, category: activeTag(), done: false,
+  draft = { id: uid(), text: '', doDay: todayKey(), time: null, deadline: null, priority: 0, category: activeTag(), done: false,
             description: '', subtasks: [] };
-  draftLast = {}; draftMore = false;
+  draftMore = false;
   openSheet(draft.id);
   $('[data-sh="more"]').hidden = true;
   sheetBody.querySelector('.sh-title').focus({ preventScroll: true });   // in the same tap, so the phone keyboard opens
@@ -1849,9 +2011,9 @@ function openNewTask(note = '') {
 
 // Turns the draft into a real task
 function commitDraft(d) {
-  const p = parseInput(d.text, data.categories, todayKey());
-  if (!p.text) return null;
-  const t = { ...newTask({ ...d, text: p.text }), id: d.id };
+  const hits = titleLabels(d.text, true), text = cleanTitle(d.text, hits);
+  if (!text) return null;
+  const t = { ...newTask({ ...d, ...labelFields(hits), text }), id: d.id };
   if (d.description.trim()) t.description = d.description;
   if (d.subtasks.length) t.subtasks = d.subtasks;
   change(() => data.tasks.push(t));
@@ -1860,21 +2022,35 @@ function commitDraft(d) {
 }
 
 // Shortcuts typed in the title (/tmr, /dl 20.11, !!, /tag, /nd) fill the buttons under it
-function readDraftTitle(raw) {
-  draft.text = raw;
-  if (draftNote) { draftNote = ''; const n = sheetBody.querySelector('.sh-added'); if (n) n.remove(); }
-  const now = {};
-  for (const tok of classifyTokens(raw, data.categories, todayKey())) {
-    if (tok.kind === 'date') now.doDay = tok.value;
-    else if (tok.kind === 'nd') now.doDay = null;
-    else if (tok.kind === 'dl') now.deadline = tok.value;
-    else if (tok.kind === 'pri') now.priority = tok.value;
-    else if (tok.kind === 'cat') now.category = tok.value;
+// The task's own values; labels typed in the title go on top of them
+const FIELDS = ['doDay', 'time', 'deadline', 'priority', 'category'];
+let sheetBase = {};
+const baseOf = t => Object.fromEntries(FIELDS.map(f => [f, t[f] === undefined ? (f === 'priority' ? 0 : null) : t[f]]));
+// Typing in the panel's title: labels are coloured and shown in the buttons right away
+function onTitleInput(el) {
+  const t = sheetTask(), hits = titleLabels(el.value, false), shown = { ...sheetBase, ...labelFields(hits) };
+  highlightTitle(el, hits);
+  sheetBody.querySelector('.sh-props').outerHTML = propsHtml({ ...t, ...shown });
+  if (isDraft()) {
+    Object.assign(draft, shown, { text: el.value.replace(/\n/g, ' ') });
+    if (draftNote) { draftNote = ''; const n = sheetBody.querySelector('.sh-added'); if (n) n.remove(); }
+  } else if (!hits.length) {   // with labels, the title is saved when you finish
+    const v = el.value.replace(/\n/g, ' ').replaceAll(PLAIN, '').trim(), id = sheetId;
+    if (v) queueText('text', () => { findTask(id).text = v; });
   }
-  let changed = false;
-  for (const k in now) if (now[k] !== draftLast[k]) { draft[k] = now[k]; changed = true; }
-  draftLast = now;
-  if (changed) sheetBody.querySelector('.sh-props').outerHTML = propsHtml(draft);
+}
+// Editing a task: when you finish (Enter, leaving the title), labels are saved and their words leave the title
+function finishTitle() {
+  const el = titleEl();
+  if (!el || !sheetId || isDraft() || !findTask(sheetId)) return;   // (a new task that was just discarded)
+  const hits = titleLabels(el.value, true);
+  if (!hits.length) return;
+  flushText();
+  const id = sheetId, fields = labelFields(hits), text = cleanTitle(el.value, hits);
+  el.value = plainAll(text); highlightTitle(el, []); autoGrow(el);
+  editing(() => { const t = findTask(id); Object.assign(t, fields); if (text) t.text = text; });
+  sheetBase = baseOf(findTask(id));
+  sheetBody.querySelector('.sh-props').outerHTML = propsHtml(findTask(id));
 }
 
 // Phone: keep the small new-task box right above the keyboard
@@ -1949,9 +2125,9 @@ function renderSheet() {
   sheetBody.innerHTML = `
     <div class="sh-card">
       <div class="sh-title-row">
-        <input type="checkbox" class="check sh-check" ${t.done ? 'checked' : ''} title="Mark as done"${isDraft() ? ' style="visibility:hidden"' : ''}>
-        <textarea class="sh-title" rows="1" data-f="text" aria-label="Task title"${isDraft()
-          ? ' placeholder="New task, e.g. Buy milk /tmr !!" enterkeyhint="done"' : ''}>${esc(t.text)}</textarea>
+        ${isDraft() ? '' : `<input type="checkbox" class="check sh-check" ${t.done ? 'checked' : ''} title="Mark as done">`}
+        <div class="sh-title-wrap"><div class="sh-title-hl" aria-hidden="true"></div><textarea class="sh-title" rows="1" data-f="text" aria-label="Task title"${isDraft()
+          ? ' placeholder="Add task" enterkeyhint="done"' : ''}>${esc(isDraft() ? t.text : plainAll(t.text))}</textarea></div>
         ${isDraft() ? `<button class="sh-ai" data-act="ai" title="Turn a list into tasks with AI">${icon('sparkle')}</button>` : ''}
       </div>
       ${isDraft() && draftNote ? `<div class="sh-added">${esc(draftNote)}</div>` : ''}
@@ -1970,6 +2146,8 @@ function renderSheet() {
       <li><input class="sub-new" placeholder="+ Add sub-task" autocomplete="off"></li>
     </ul>`}`;
   sheetBody.querySelectorAll('textarea').forEach(autoGrow);
+  const ttl = sheetBody.querySelector('.sh-title');
+  if (ttl) highlightTitle(ttl, titleLabels(ttl.value, false));
   if (focusNew) sheetBody.querySelector('.sub-new').focus();
   const pop = sheetBody.querySelector('.prop-pop');
   if (pop) {
@@ -1984,6 +2162,7 @@ function propsHtml(t) {
   const c = t.category && catById(t.category);
   return `<div class="sh-props">
     <button class="prop" data-prop="doDay" title="Do day">${icon(t.doDay ? 'calendar' : 'inbox')} ${t.doDay ? fmt(t.doDay) : 'Inbox'}</button>
+    ${t.time ? `<button class="prop time" data-prop="time" title="Time">${t.time}</button>` : ''}
     <button class="prop${t.deadline ? '' : ' empty'}" data-prop="deadline" title="Deadline">${icon('alarm')}${t.deadline ? ' ' + fmt(t.deadline) : ''}</button>
     <button class="prop${c ? ' cat' : ' empty'}" data-prop="category" title="Category"${c ? ` style="--c:${c.color}"` : ''}>${icon('tag')}${c ? ' ' + esc(catPath(c.id)) : ''}</button>
     <button class="prop${t.priority ? ' pri' + t.priority : ' empty'}" data-prop="priority" title="Priority">${icon('flag')}${t.priority ? ' ' + '!'.repeat(t.priority) : ''}</button>
@@ -1997,6 +2176,9 @@ function propPopHtml(t, which) {
       <button class="q" data-set="doDay" data-v="${addDays(T, 1)}">Tomorrow</button>
       <button class="q" data-set="doDay" data-v="">Inbox (no date)</button></div>
     <div class="pp-row"><input type="date" data-pick="doDay" value="${t.doDay || ''}"></div></div>`;
+  if (which === 'time') return `<div class="prop-pop"><div class="pp-title">Time</div>
+    <div class="pp-row"><input type="time" data-pick="time" value="${t.time || ''}"></div>
+    <div class="pp-row"><button class="q" data-set="time" data-v="">Remove time</button></div></div>`;
   if (which === 'deadline') return `<div class="prop-pop"><div class="pp-title">Deadline</div>
     <div class="pp-row"><input type="date" data-pick="deadline" value="${t.deadline || ''}"></div>
     ${t.deadline ? '<div class="pp-row"><button class="q" data-set="deadline" data-v="">Remove deadline</button></div>' : ''}</div>`;
@@ -2008,17 +2190,24 @@ function propPopHtml(t, which) {
 }
 
 // Changes from the panel: save, redraw the lists and the panel
-function sheetChange(fn) { flushText(); editing(fn); renderSheet(); }
+function sheetChange(fn) {
+  finishTitle(); flushText();
+  const t = sheetTask(), before = baseOf(t);
+  editing(fn);
+  // A field changed with its button: its typed words stay text, so they don't change it back
+  const now = baseOf(sheetTask());
+  for (const f of FIELDS) if (now[f] !== before[f]) { sheetBase[f] = now[f]; if (isDraft()) draft.text = plainField(draft.text, f); }
+  renderSheet();
+}
 const sheetTask = () => findTask(sheetId);
 const subById = sid => (sheetTask().subtasks || []).find(s => s.id === sid);
 
 sheetBody.addEventListener('input', e => {
   const el = e.target, id = sheetId;
   if (el.matches('textarea')) autoGrow(el);
-  if (el.dataset.f === 'text' && isDraft()) { readDraftTitle(el.value.replace(/\n/g, ' ')); selIndex = 0; showSuggest(); }
-  else if (el.dataset.f === 'text') {
-    const v = el.value.replace(/\n/g, ' ').trim();
-    if (v) queueText('text', () => { findTask(id).text = v; });
+  if (el.dataset.f === 'text') {
+    onTitleInput(el);
+    selIndex = 0; showSuggest();
   } else if (el.dataset.f === 'description') {
     const v = el.value;
     queueText('description', () => { findTask(id).description = v; });
@@ -2029,12 +2218,17 @@ sheetBody.addEventListener('input', e => {
 });
 sheetBody.addEventListener('keydown', e => {
   const el = e.target;
-  // The "/" suggestion list under a new task's title
+  // ⌫ right after a coloured word turns it back into text
+  if (el.dataset.f === 'text' && plainLastLabel(e)) return;
+  // The suggestion list under the title
   if (el.dataset.f === 'text' && !suggestEl.hidden) {
     const n = suggestions.length;
     if (e.key === 'ArrowDown') { e.preventDefault(); selIndex = (selIndex + 1) % n; return showSuggest(); }
     if (e.key === 'ArrowUp') { e.preventDefault(); selIndex = (selIndex - 1 + n) % n; return showSuggest(); }
-    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); return pickSuggestion(selIndex); }
+    // Enter after a complete word ("fri", "CRMaM") saves; the list is only a help for half-typed words
+    const done = e.key === 'Enter' && wordLabel(el.value.slice(0, el.selectionStart), data.categories, todayKey());
+    if (done) hideSuggest();
+    else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); return pickSuggestion(selIndex); }
     if (e.key === 'Escape') { e.stopPropagation(); return hideSuggest(); }
   }
   // New task: Enter saves it and starts the next one
@@ -2044,7 +2238,7 @@ sheetBody.addEventListener('keydown', e => {
     if (!t) return;
     return openNewTask('✓ Added to ' + whereText(t));
   }
-  if (el.dataset.f === 'text' && e.key === 'Enter') { e.preventDefault(); el.blur(); }
+  if (el.dataset.f === 'text' && e.key === 'Enter') { e.preventDefault(); finishTitle(); el.blur(); }
   if (el.classList.contains('sub-text') && e.key === 'Enter') { e.preventDefault(); el.blur(); }
   if (el.classList.contains('sub-new') && e.key === 'Enter') {
     e.preventDefault();
@@ -2069,10 +2263,10 @@ sheetBody.addEventListener('change', e => {
 });
 sheetBody.addEventListener('click', e => {
   if (doneOpen) return onListClick(e);
-  if (e.target.matches('.sh-title') && isDraft()) return showSuggest();
+  if (e.target.matches('.sh-title')) return showSuggest();
   const b = e.target.closest('button'); if (!b) return;
   // New task: ✨ moves the typed text to the AI box, "More details" shows the rest of the panel
-  if (b.dataset.act === 'ai') { const text = draft.text.trim(); draft = null; closeSheet(); return openAi(text); }
+  if (b.dataset.act === 'ai') { const text = draft.text.replaceAll(PLAIN, '').trim(); draft = null; closeSheet(); return openAi(text); }
   if (b.dataset.act === 'details') { draftMore = true; return renderSheet(); }
   if (b.dataset.prop) { propOpen = propOpen === b.dataset.prop ? null : b.dataset.prop; return renderSheet(); }
   if (b.dataset.set) {
@@ -2591,9 +2785,10 @@ function openAcctPop(btn) {
 }
 function closeAcctPop() { $('#acctPop').hidden = true; }
 
-// The Google pass lasts about an hour: the next click after it ran out quietly renews it
-document.addEventListener('pointerdown', e => {
-  if (ui.google && gState === 'paused' && !reconnecting && Date.now() - lastReconnectTry > 60000 &&
+// The Google pass lasts about an hour: the next tap or click after it ran out renews it
+// ("click", because phones only allow Google's window after a full tap)
+document.addEventListener('click', e => {
+  if (ui.google && gState === 'paused' && !reconnecting && Date.now() - lastReconnectTry > 5000 &&
       !e.target.closest('[data-act="reconnect"], [data-act="signout"]')) reconnect();
 }, true);
 window.addEventListener('focus', () => syncNow());
