@@ -648,6 +648,8 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   /* While sliding, the screens look like cards with rounded corners (like Instagram) */
   .app.sliding > *, .app.moving > * { border-radius: 28px; }
   .app.sliding > * { transition: border-radius .2s; }
+  /* Phone: each screen on its own drawing layer, so iOS keeps drawing it while it slides */
+  @media (pointer: coarse) { .col-mid, .col-right, .col-screen { will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; } }
   .col-mid { padding: 0 24px 150px; }
   .col-right { padding: 30px 24px 150px; }
   .col-screen { padding: 30px 24px 150px; }
@@ -3066,7 +3068,20 @@ setInterval(() => document.querySelectorAll('.acct-status').forEach(el => { el.i
 const SCREENS = ['tasks', 'inbox', 'done', 'me'];
 const DROP_TABS = { tasks: 'today', inbox: 'inbox' };   // drag a task onto these buttons to move it there
 const NARROW = matchMedia('(max-width: 999px)');
-let movingTimer = null;
+let movingTimer = null, settleTimer = null;
+// Safety net: after a slide the screens sit exactly in place and the shown screen is drawn again.
+// (An unfinished swipe, or iOS not drawing a sliding screen, once left only the grey gap visible.)
+function settleScreens() {
+  if ((slide && slide.on) || hwheel.state === 'on') return;   // a swipe is still going on
+  const a = $('.app');
+  a.classList.remove('sliding');
+  a.style.setProperty('--drag', '0px');
+  a.style.setProperty('--i', SCREENS.indexOf(screen));
+  const el = $({ tasks: '.col-mid', inbox: '.col-right', done: '#doneScreen', me: '#meScreen' }[screen]);
+  if (el) { el.style.opacity = '0.999'; requestAnimationFrame(() => { el.style.opacity = ''; }); }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) settleScreens(); });
+addEventListener('pageshow', settleScreens);
 function setScreen(name) {
   if (name !== screen) {   // rounded corners while the screens slide, and a tick on the phone
     haptic();
@@ -3076,6 +3091,7 @@ function setScreen(name) {
   screen = name;
   document.body.dataset.screen = name;
   $('.app').style.setProperty('--i', SCREENS.indexOf(name));
+  clearTimeout(settleTimer); settleTimer = setTimeout(settleScreens, 400);
   renderScreen();
 }
 function renderScreen() {
@@ -3112,6 +3128,7 @@ const slideTo = dx => app.style.setProperty('--drag', dx + 'px');
 const edge = dx => { const i = SCREENS.indexOf(screen); return (i === 0 && dx > 0) || (i === SCREENS.length - 1 && dx < 0) ? dx / 3 : dx; };
 function slideEnd(dx, fast) {
   app.classList.add('moving'); clearTimeout(movingTimer); movingTimer = setTimeout(() => app.classList.remove('moving'), 350);
+  clearTimeout(settleTimer); settleTimer = setTimeout(settleScreens, 400);
   app.classList.remove('sliding'); slideTo(0);
   const i = SCREENS.indexOf(screen), go = Math.abs(dx) > app.clientWidth * 0.35 || fast ? (dx < 0 ? 1 : -1) : 0;
   if (go && SCREENS[i + go]) setScreen(SCREENS[i + go]);
@@ -3119,6 +3136,7 @@ function slideEnd(dx, fast) {
 let slide = null;   // { x, y, t, dx, on }
 document.addEventListener('touchstart', e => {
   slide = null;
+  if (app.classList.contains('sliding')) settleScreens();   // a swipe that never finished
   if (!NARROW.matches || e.touches.length !== 1 || !sheet.hidden || document.querySelector('dialog[open]')) return;
   if (e.target.closest('.trow, .week, input, textarea, .menu, .popover, #tabbar')) return;
   slide = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now(), dx: 0, on: false };
