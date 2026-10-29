@@ -1076,13 +1076,22 @@ function testHaptic() {
   else toast('This device has no haptics (laptops can\'t tick).');
 }
 // A short tick: Android vibrates, iPhone (iOS 18+) ticks when a hidden switch is toggled. Laptops: nothing.
+// The switch must really be on the page (not display:none), only invisible, or the iPhone does not tick.
+let hapticLabel = null;
 function haptic() {
   try {
     if (navigator.vibrate) { navigator.vibrate(12); return; }
-    const label = document.createElement('label'), sw = document.createElement('input');
-    sw.type = 'checkbox'; sw.setAttribute('switch', '');
-    label.appendChild(sw); label.style.display = 'none';
-    document.head.appendChild(label); label.click(); label.remove();
+    if (!hapticLabel) {
+      const sw = document.createElement('input');
+      sw.type = 'checkbox'; sw.setAttribute('switch', ''); sw.id = 'hapticSwitch'; sw.tabIndex = -1;
+      hapticLabel = document.createElement('label'); hapticLabel.htmlFor = 'hapticSwitch';
+      for (const el of [sw, hapticLabel]) {
+        el.setAttribute('aria-hidden', 'true');
+        Object.assign(el.style, { position: 'fixed', left: '0', top: '0', width: '1px', height: '1px', margin: '0', opacity: '0.01', pointerEvents: 'none' });
+      }
+      document.body.append(sw, hapticLabel);
+    }
+    hapticLabel.click();
   } catch (e) { /* no haptics on this device */ }
 }
 
@@ -2867,7 +2876,7 @@ function closeAcctPop() { $('#acctPop').hidden = true; }
 // ("click", because phones only allow Google's window after a full tap)
 document.addEventListener('click', e => {
   if (ui.google && gState === 'paused' && !reconnecting && Date.now() - lastReconnectTry > 5000 &&
-      !e.target.closest('[data-act="reconnect"], [data-act="signout"]')) reconnect();
+      !e.target.closest('[data-act="reconnect"], [data-act="signout"], #hapticSwitch, label[for="hapticSwitch"]')) reconnect();
 }, true);
 window.addEventListener('focus', () => syncNow());
 window.addEventListener('online', () => syncNow());
@@ -2880,7 +2889,8 @@ const DROP_TABS = { tasks: 'today', inbox: 'inbox' };   // drag a task onto thes
 const NARROW = matchMedia('(max-width: 999px)');
 let movingTimer = null;
 function setScreen(name) {
-  if (name !== screen) {   // rounded corners while the screens slide
+  if (name !== screen) {   // rounded corners while the screens slide, and a tick on the phone
+    haptic();
     $('.app').classList.add('moving');
     clearTimeout(movingTimer); movingTimer = setTimeout(() => $('.app').classList.remove('moving'), 350);
   }
@@ -2956,7 +2966,7 @@ document.addEventListener('touchend', () => {
 });
 document.addEventListener('touchcancel', () => { if (slide && slide.on) slideEnd(0); slide = null; });
 // Trackpad: two fingers sideways. A short swipe (60px) is enough; one swipe = one screen.
-let hwheel = { sum: 0, idle: null, state: 'idle' };   // idle → on (screens follow) → done (wait for the fingers to rest)
+let hwheel = { sum: 0, idle: null, state: 'idle', last: 0, at: 0 };   // idle → on (screens follow) → done (the swipe glides on)
 document.addEventListener('wheel', e => {
   if (!NARROW.matches || !sheet.hidden) return;
   if (hwheel.state === 'idle') {
@@ -2968,10 +2978,16 @@ document.addEventListener('wheel', e => {
   e.preventDefault();   // once sideways, small up/down wobbles belong to the same swipe
   clearTimeout(hwheel.idle);
   hwheel.idle = setTimeout(() => { if (hwheel.state === 'on') slideEnd(edge(-hwheel.sum)); hwheel.sum = 0; hwheel.state = 'idle'; }, 120);
-  if (hwheel.state === 'done') return;
+  if (hwheel.state === 'done') {
+    // macOS keeps sending a fading "glide" after a swipe. A new swipe makes the movement suddenly stronger again.
+    const a = Math.abs(e.deltaX), fresh = Date.now() - hwheel.at > 200 && a > 6 && a > hwheel.last * 1.6;
+    hwheel.last = a;
+    if (!fresh) return;
+    hwheel.state = 'on'; hwheel.sum = 0; app.classList.add('sliding');
+  }
   hwheel.sum += e.deltaX;
   slideTo(edge(-hwheel.sum));
-  if (Math.abs(hwheel.sum) > 60) { hwheel.state = 'done'; slideEnd(edge(-hwheel.sum), true); }
+  if (Math.abs(hwheel.sum) > 60) { hwheel.state = 'done'; hwheel.at = Date.now(); hwheel.last = Math.abs(e.deltaX); slideEnd(edge(-hwheel.sum), true); }
 }, { passive: false });
 
 // A panel opens at half the screen. Swipe (or drag the handle) up: full screen. Down: back to half, then closed.
