@@ -591,6 +591,15 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 }
 .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
 .toast button { border: 0; background: none; color: #9fb1ff; font-weight: 700; padding: 0; }
+/* "Google paused" bar: stays until tapped (reconnect) or closed with × */
+.gbar {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 4px;
+  background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 4px 4px 4px 6px; box-shadow: var(--shadow-md);
+  max-width: calc(100vw - 32px); font-size: 14px; font-weight: 500; animation: pop .18s ease-out;
+}
+.gbar button { border: 0; background: none; color: inherit; padding: 6px 8px; border-radius: 8px; }
+.gbar button:hover { background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.gbar #gbarX { font-size: 18px; line-height: 1; }
 
 /* Bottom bar (phone or narrow window) */
 .tabbar {
@@ -686,7 +695,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   .col-screen { padding: 30px 24px 150px; }
   .tabbar { display: flex; }
   .fab { bottom: calc(76px + env(safe-area-inset-bottom)); }
-  .toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .toast, .gbar { bottom: calc(76px + env(safe-area-inset-bottom)); }
   .col-right .head { margin-left: 2px; }
   .col-right .group { min-height: 0; }
   .col-right .task { padding: 12px 14px 12px 16px; font-size: 15px; }
@@ -826,6 +835,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 
 <input type="file" id="importFile" accept=".json,application/json" hidden>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" hidden>Undo</button></div>
+<div class="gbar" id="gbar" hidden><button id="gbarGo">Google paused – tap to reconnect</button><button id="gbarX" title="Hide" aria-label="Hide">×</button></div>
 
 <!-- ===== Core logic: dates and shortcut parsing (no page access) ===== -->
 <script id="core">
@@ -2826,7 +2836,16 @@ let gToken = null, gTokenExp = 0;
 let gState = 'off';        // off | ok | saving | offline | error | paused
 let lastSaved = 0, driveFileId = null;
 let syncing = false, syncAgain = false, pushTimer = null, retryTimer = null;
-let reconnecting = false, lastReconnectTry = 0;
+let reconnecting = false, gbarClosed = false;
+
+// The Google pass is kept on this device until it runs out, so reopening Mytodo needs no Google window
+const PASS_KEY = 'mytodo-gpass-v1';
+function keepPass() { try { localStorage.setItem(PASS_KEY, JSON.stringify({ t: gToken, exp: gTokenExp })); } catch (e) {} }
+function forgetPass() { try { localStorage.removeItem(PASS_KEY); } catch (e) {} }
+function loadPass() {
+  try { const p = JSON.parse(localStorage.getItem(PASS_KEY) || 'null'); if (p && p.t && Date.now() < p.exp) return p; } catch (e) {}
+  return null;
+}
 
 const gReady = () => !!(window.google && google.accounts && google.accounts.oauth2);
 const scopes = () => 'openid email profile ' + SCOPE_DRIVE + (ui.google && ui.google.calendar ? ' ' + SCOPE_TASKS : '');
@@ -2840,6 +2859,7 @@ function requestToken(prompt) {
       callback: r => {
         if (r.error) return reject(new Error(r.error));
         gToken = r.access_token; gTokenExp = Date.now() + (Number(r.expires_in) - 60) * 1000;
+        keepPass();
         resolve(r);
       },
       error_callback: e => reject(new Error(e.type || 'popup_closed')),
@@ -3006,7 +3026,7 @@ async function signIn() {
     const me = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + gToken } }).then(x => x.json());
     ui.google = { email: me.email, name: me.name || me.email, picture: me.picture || '', calendar: false };
     saveUi();
-    gState = 'ok'; driveFileId = null;
+    gState = 'ok'; driveFileId = null; showGbar();
     renderLeft(); renderAcctPop();
     await syncNow();   // merges this device's tasks with the ones saved in Google
     toast('Signed in ✓ Your tasks are saved in your Google account');
@@ -3017,7 +3037,7 @@ async function signIn() {
 
 async function reconnect() {
   if (!ui.google || reconnecting) return;
-  reconnecting = true; lastReconnectTry = Date.now();
+  reconnecting = true;
   try { await requestToken(''); setG('ok'); syncNow(); }
   catch (e) { setG('paused'); }
   reconnecting = false;
@@ -3045,9 +3065,9 @@ async function setCalendar(on) {
 
 function signOut(keep) {
   $('#outDlg').close();
-  gToken = null; driveFileId = null;
+  gToken = null; driveFileId = null; forgetPass();
   ui.google = null; saveUi();
-  gState = 'off';
+  gState = 'off'; showGbar();
   if (!keep) {
     data = withColors(defaultData());
     undoStack.length = 0; redoStack.length = 0;
@@ -3088,7 +3108,9 @@ function accountHtml() {
 function setG(state) {
   gState = state;
   document.querySelectorAll('.acct-status').forEach(el => { el.className = 'acct-status s-' + state; el.innerHTML = statusText(); });
+  showGbar();
 }
+function showGbar() { $('#gbar').hidden = !(ui.google && gState === 'paused' && !gbarClosed); }
 function renderAcctPop() { if (!$('#acctPop').hidden) $('#acctPop').innerHTML = accountHtml(); }
 function openAcctPop(btn) {
   const pop = $('#acctPop'), r = btn.getBoundingClientRect();
@@ -3098,12 +3120,10 @@ function openAcctPop(btn) {
 }
 function closeAcctPop() { $('#acctPop').hidden = true; }
 
-// The Google pass lasts about an hour: the next tap or click after it ran out renews it
-// ("click", because phones only allow Google's window after a full tap)
-document.addEventListener('click', e => {
-  if (ui.google && gState === 'paused' && !reconnecting && Date.now() - lastReconnectTry > 5000 &&
-      !e.target.closest('[data-act="reconnect"], [data-act="signout"], #hapticSwitch')) reconnect();
-}, true);
+// The Google pass lasts about an hour: once it ran out, the bar asks for a tap to renew it
+// (phones only allow Google's window after a full tap). × hides the bar until Mytodo opens again.
+$('#gbarGo').addEventListener('click', () => reconnect());
+$('#gbarX').addEventListener('click', () => { gbarClosed = true; showGbar(); });
 window.addEventListener('focus', () => syncNow());
 window.addEventListener('online', () => syncNow());
 setInterval(() => syncNow(), 120000);
@@ -3143,14 +3163,14 @@ function renderScreen() {
   if (!$('#tabbar')) return;
   const g = ui.google;
   const me = g && g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : icon('user');
-  $('#tabbar').innerHTML = [['tasks', icon('list'), 'Tasks'], ['inbox', icon('inbox'), 'Inbox'], ['done', icon('check'), 'Done'], ['me', me, 'Me']]
+  $('#tabbar').innerHTML = [['tasks', icon('list'), 'Tasks'], ['inbox', icon('inbox'), 'Inbox'], ['done', icon('check'), 'Done'], ['me', me, 'Settings']]
     .map(([k, ic, label]) => `<div role="button" tabindex="0" data-screen="${k}" class="tab${screen === k ? ' on' : ''}"${DROP_TABS[k] ? ` data-drop="${DROP_TABS[k]}"` : ''}>${ic}<span>${label}</span>${TICK}</div>`).join('');   // not <button>: a label inside a button gets no tap
   // On the phone the screens next to this one show while swiping, so they are always drawn
   if (screen === 'done' || NARROW.matches) $('#doneScreen').innerHTML = doneHtml();
   if (screen === 'me' || NARROW.matches) renderMe();
 }
 function renderMe() {
-  $('#meScreen').innerHTML = `<h1 class="screen-title">Me</h1>
+  $('#meScreen').innerHTML = `<h1 class="screen-title">Settings</h1>
     <div class="me-card">${accountHtml()}</div>
     <div class="me-section">Theme</div>
     <div class="me-card">${themeSummaryHtml()}${themeOpen ? themeChoicesHtml() : ''}</div>
@@ -3339,13 +3359,18 @@ splash.addEventListener('pointerdown', endSplash);
 setTimeout(endSplash, 1500);   // in case an animation event is missed
 document.body.dataset.screen = 'tasks';
 makeHapticSwitch();
-if (ui.google) gState = 'paused';   // after opening, the first click reconnects to Google
+// After opening: use the saved Google pass if it is still valid, otherwise show the "paused" bar
+const pass = ui.google && loadPass();
+if (pass) { gToken = pass.t; gTokenExp = pass.exp; gState = 'ok'; }
+else if (ui.google) gState = 'paused';
+showGbar();
 $('#aiTitle').insertAdjacentHTML('afterbegin', icon('sparkle'));
 $('#mDup').innerHTML = icon('copy') + ' Duplicate';
 $('#mInbox').innerHTML = icon('inbox') + ' Move to Inbox';
 $('#mDel').innerHTML = icon('trash') + ' Delete';
 applyTheme();
 render();
+if (pass) syncNow();
 // Refresh when the date changes (e.g. after midnight)
 setInterval(() => { if (todayKey() !== currentDay) { currentDay = todayKey(); render(); } }, 60000);
 </script>
