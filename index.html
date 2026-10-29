@@ -71,6 +71,29 @@
 .dots { display: inline-flex; gap: 3px; }
 .dots i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
 .theme-pop { width: 260px; }
+/* Week strip under the tag row: Mo–Su, dots for tasks, red dot for a deadline */
+.week { display: flex; align-items: center; gap: 4px; margin-top: 12px; }
+.week-days { display: flex; flex: 1; gap: 2px; min-width: 0; }
+.week-days.from-r { animation: weekIn .25s ease-out; --from: 40px; }
+.week-days.from-l { animation: weekIn .25s ease-out; --from: -40px; }
+@keyframes weekIn { from { transform: translateX(var(--from)); opacity: .2; } }
+.week .wd {
+  flex: 1; min-width: 0; border: 0; background: none; border-radius: 12px; padding: 5px 0 4px; color: var(--text);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+}
+.week .wd:hover { background: var(--hover); }
+.week .wn { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.week .wdate { font-size: 16px; font-weight: 600; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; }
+.week .wd.today .wdate { background: var(--accent); color: #fff; }
+.week .wd.past { opacity: .35; pointer-events: none; }
+.week .wdots { display: flex; gap: 3px; height: 6px; }
+.week .wdots i { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); opacity: .7; }
+.week .wdots i.dl { background: var(--danger); opacity: 1; }
+.week .warrow { border: 0; background: none; color: var(--muted); font-size: 22px; width: 26px; height: 44px; border-radius: 8px; flex: none; }
+.week .warrow:hover { background: var(--hover); color: var(--text); }
+.week .warrow:disabled { opacity: .25; cursor: default; }
+.week .wtoday { border: 0; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 12px; border-radius: 8px; padding: 5px 9px; flex: none; }
+@media (pointer: coarse) { .week .warrow { display: none; } }   /* phone: swipe the strip instead */
 .title-row { display: flex; align-items: center; gap: 8px; }
 .title-row h1 { flex: 1; min-width: 0; }
 .title-btns { display: flex; gap: 8px; }
@@ -654,6 +677,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
       <div class="title-row"><h1 id="viewTitle">Tasks</h1><div class="title-btns" id="titleBtns"></div></div>
       <div class="subtitle" id="viewSub"></div>
       <div class="tag-bar" id="tagBar"></div>
+      <div class="week" id="weekStrip"></div>
     </div>
     <div id="list"></div>
   </main>
@@ -1119,14 +1143,6 @@ function playDone() {
     });
   } catch (e) { /* no sound on this device */ }
 }
-// Me → Haptics → Test: ticks and says which way this device uses, to find out why it might not work
-function testHaptic() {
-  haptic();
-  const ios = navigator.userAgent.match(/OS (\d+)[_.](\d+)[^)]* like Mac OS X/);
-  if (navigator.vibrate) toast('Tick sent (Android vibration). Did you feel it?');
-  else if (ios) toast('Tick sent. On iPhone only taps tick: the task circle, the bottom bar and this button (needs System Haptics on).');
-  else toast('This device has no haptics (laptops can\'t tick).');
-}
 // A short tick: Android vibrates, iPhone (iOS 18+) ticks when a hidden switch is toggled. Laptops: nothing.
 // iPhone: the only tick a web page gets is the one of <input type="checkbox" switch>.
 // iOS 26.5+ only ticks for a real finger tap on a label of that switch: those labels (TICK) lie over the
@@ -1158,6 +1174,7 @@ let addingCat = false;      // "+ New category" input is open
 let inlineDay = null;       // day whose "+ Add task" input is open
 let filterTag = null;       // selected tag: only its tasks are shown
 let screen = 'tasks';       // phone or narrow window: the screen shown (bottom bar)
+let stripWeek = 0;          // week strip: 0 = this week, 1 = next week, …
 const TOUCH = matchMedia('(pointer: coarse)');   // phone or iPad
 
 /* ---------- Undo / redo ---------- */
@@ -1400,7 +1417,6 @@ function onTagAreaClick(e) {
     return;
   }
   if (act === 'sound') return toggleSound();
-  if (act === 'test-haptic') return testHaptic();
   if (act === 'done') return doneOpen ? closeSheet() : openDone();
   if (act === 'edit-cats') return openCats();
   if (act === 'export') return exportData();
@@ -1568,7 +1584,7 @@ function group(title, tasks, o = {}) {
   let items = tasks.map(t => taskHtml(t, o)).join('');
   if (o.addDay) items += addLineHtml(o.addDay, !tasks.length);
   else if (!tasks.length) items = `<li class="empty">${o.empty || 'No tasks'}</li>`;
-  return `<section class="group${o.cls ? ' ' + o.cls : ''}"${o.drop ? ` data-drop="${o.drop}"` : ''}>
+  return `<section class="group${o.cls ? ' ' + o.cls : ''}"${o.drop ? ` data-drop="${o.drop}"` : ''}${o.day ? ` data-day="${o.day}"` : ''}>
     ${title ? `<h3>${title}${o.pending ? ` <span class="count">${tasks.length}</span>` : ''}</h3>` : ''}
     <ul class="tasks">${items}</ul>
   </section>`;
@@ -1583,12 +1599,13 @@ function renderMiddle() {
     $('#viewSub').textContent = DAY_FULL[fromKey(T).getDay()] + ', ' + fmt(T) + '/' + fromKey(T).getFullYear();
     const over = open.filter(t => t.doDay && t.doDay < T).sort(byDayThenPriority);
     if (over.length) html += group('Pending', over, { pending: true, cls: 'pending' });
-    for (let i = 0; i <= 3; i++) {
-      const k = addDays(T, i);
+    // Every day from today until the Sunday of the week shown in the week strip; after that, "Later"
+    const end = weekEnd();
+    for (let i = 0, k = T; k <= end; i++, k = addDays(T, i)) {
       html += group(esc(dayLabel(k)), open.filter(t => t.doDay === k).sort(byDayThenPriority),
-        { drop: i === 0 ? 'today' : k, cls: i === 0 ? 'today' : '', addDay: k });
+        { drop: i === 0 ? 'today' : k, cls: i === 0 ? 'today' : '', addDay: k, day: k });
     }
-    const later = open.filter(t => t.doDay && t.doDay > addDays(T, 3)).sort(byDayThenPriority);
+    const later = open.filter(t => t.doDay && t.doDay > end).sort(byDayThenPriority);
     html += group('Later', later, { showDay: true });
   }
   $('#list').innerHTML = html;
@@ -1601,7 +1618,7 @@ function renderInbox() {
     group('', inbox, { drop: 'inbox', empty: 'No tasks without a day. Type /nd or drag a task here.' });
 }
 
-function render() { renderLeft(); renderTagBar(); renderMiddle(); renderInbox(); if (doneOpen) renderDone(); renderScreen(); }
+function render() { renderLeft(); renderTagBar(); renderWeek(); renderMiddle(); renderInbox(); if (doneOpen) renderDone(); renderScreen(); }
 
 /* ---------- Task actions ---------- */
 const findTask = id => data.tasks.find(t => t.id === id) || (draft && draft.id === id ? draft : undefined);
@@ -1979,6 +1996,69 @@ $('#tagBar').addEventListener('focusout', e => {
   if (!e.target.classList.contains('tchip-input')) return;
   setTimeout(() => { if (tagAdding && !document.activeElement.classList.contains('tchip-input')) { tagAdding = null; renderTagBar(); } }, 150);
 });
+
+/* ---------- Week strip: Mo–Su, swipe for the next week, tap a day to jump to it ---------- */
+const mondayOf = k => addDays(k, -((fromKey(k).getDay() + 6) % 7));
+const weekEnd = () => addDays(mondayOf(todayKey()), 7 * stripWeek + 6);   // the list shows days until here
+function renderWeek(from) {
+  const T = todayKey(), mon = addDays(mondayOf(T), 7 * stripWeek);
+  const open = data.tasks.filter(t => !t.done);   // all tasks, also when a tag is selected
+  const days = Array.from({ length: 7 }, (_, i) => addDays(mon, i)).map(k => {
+    const n = Math.min(3, open.filter(t => t.doDay === k).length), dl = open.some(t => t.deadline === k);
+    const past = k < T;
+    return `<button class="wd${k === T ? ' today' : ''}${past ? ' past' : ''}" data-wday="${k}"${past ? '' : ` data-drop="${k === T ? 'today' : k}"`}>
+      <span class="wn">${DAY_LABELS[fromKey(k).getDay()].slice(0, 2)}</span><span class="wdate">${fromKey(k).getDate()}</span>
+      <span class="wdots">${'<i></i>'.repeat(n)}${dl ? '<i class="dl"></i>' : ''}</span></button>`;
+  }).join('');
+  $('#weekStrip').innerHTML = `<button class="warrow" data-week="-1" title="Previous week"${stripWeek ? '' : ' disabled'}>‹</button>
+    <div class="week-days${from ? ' from-' + from : ''}">${days}</div>
+    <button class="warrow" data-week="1" title="Next week">›</button>
+    ${stripWeek ? '<button class="wtoday" data-week="0">Today</button>' : ''}`;
+}
+function setWeek(w) {
+  w = Math.max(0, w);
+  if (w === stripWeek) return;
+  const from = w > stripWeek ? 'r' : 'l';
+  stripWeek = w;
+  renderWeek(from); renderMiddle();
+  if (w === 0) jumpToDay(todayKey());
+}
+// The list scrolls so that day sits just under the header
+function jumpToDay(k) {
+  const col = $('.col-mid'), sec = $(`#list .group[data-day="${k}"]`); if (!sec) return;
+  const top = col.scrollTop + sec.getBoundingClientRect().top - col.getBoundingClientRect().top - $('.mid-head').offsetHeight - 8;
+  col.scrollTo({ top: k === todayKey() ? 0 : top, behavior: 'smooth' });
+}
+$('#weekStrip').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.week === '0') return setWeek(0);
+  if (b.dataset.week) return setWeek(stripWeek + +b.dataset.week);
+  if (b.dataset.wday) jumpToDay(b.dataset.wday);
+});
+// Swipe the strip (finger, or two fingers on a trackpad) for the next or previous week
+let weekTouch = null;
+$('#weekStrip').addEventListener('touchstart', e => { weekTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+$('#weekStrip').addEventListener('touchend', e => {
+  if (!weekTouch) return;
+  const dx = e.changedTouches[0].clientX - weekTouch.x, dy = e.changedTouches[0].clientY - weekTouch.y;
+  weekTouch = null;
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) setWeek(stripWeek + (dx < 0 ? 1 : -1));
+});
+let weekWheel = { sum: 0, idle: null, done: false, last: 0, at: 0 };
+$('#weekStrip').addEventListener('wheel', e => {
+  if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+  e.preventDefault();
+  const w = weekWheel, a = Math.abs(e.deltaX);
+  clearTimeout(w.idle); w.idle = setTimeout(() => { w.sum = 0; w.done = false; }, 150);
+  if (w.done) {   // the last swipe still glides; a new swipe makes the movement stronger again
+    const fresh = Date.now() - w.at > 200 && a > 6 && a > w.last * 1.6;
+    w.last = a;
+    if (!fresh) return;
+    w.done = false; w.sum = 0;
+  }
+  w.sum += e.deltaX;
+  if (Math.abs(w.sum) > 40) { w.done = true; w.at = Date.now(); w.last = a; setWeek(stripWeek + (w.sum > 0 ? 1 : -1)); }
+}, { passive: false });
 
 /* ---------- Suggestions while typing "/" in a new task's title ---------- */
 const suggestEl = $('#suggest');
@@ -2985,8 +3065,6 @@ function renderMe() {
     <div class="me-card">${themeChoicesHtml()}</div>
     <div class="me-section">Sound</div>
     <div class="me-card"><button class="me-row" data-act="sound">${icon(ui.sound === false ? 'bellOff' : 'bell')} Sound when a task is done <b>${ui.sound === false ? 'Off' : 'On'}</b></button></div>
-    <div class="me-section">Haptics</div>
-    <div class="me-card"><div class="me-row" role="button" data-act="test-haptic">${icon('check')} Test the tick when a task is done${TICK}</div></div>
     <div class="me-section">Categories</div>
     <div class="me-card">${tagListHtml()}<button class="me-row" data-act="edit-cats">${icon('pencil')} Edit categories</button></div>
     <div class="me-section">Backup</div>
@@ -3012,7 +3090,7 @@ let slide = null;   // { x, y, t, dx, on }
 document.addEventListener('touchstart', e => {
   slide = null;
   if (!NARROW.matches || e.touches.length !== 1 || !sheet.hidden || document.querySelector('dialog[open]')) return;
-  if (e.target.closest('.trow, input, textarea, .menu, .popover, #tabbar')) return;
+  if (e.target.closest('.trow, .week, input, textarea, .menu, .popover, #tabbar')) return;
   slide = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now(), dx: 0, on: false };
 }, { passive: true });
 document.addEventListener('touchmove', e => {
@@ -3037,7 +3115,7 @@ document.addEventListener('touchcancel', () => { if (slide && slide.on) slideEnd
 // Trackpad: two fingers sideways. A short swipe (60px) is enough; one swipe = one screen.
 let hwheel = { sum: 0, idle: null, state: 'idle', last: 0, at: 0 };   // idle → on (screens follow) → done (the swipe glides on)
 document.addEventListener('wheel', e => {
-  if (!NARROW.matches || !sheet.hidden) return;
+  if (!NARROW.matches || !sheet.hidden || e.target.closest('.week')) return;   // the week strip has its own swipe
   if (hwheel.state === 'idle') {
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;     // up/down scrolling
     const row = e.target.closest('.trow');
