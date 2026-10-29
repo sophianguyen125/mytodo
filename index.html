@@ -1067,6 +1067,14 @@ function playDone() {
     });
   } catch (e) { /* no sound on this device */ }
 }
+// Me → Haptics → Test: ticks and says which way this device uses, to find out why it might not work
+function testHaptic() {
+  haptic();
+  const ios = navigator.userAgent.match(/OS (\d+)[_.](\d+)[^)]* like Mac OS X/);
+  if (navigator.vibrate) toast('Tick sent (Android vibration). Did you feel it?');
+  else if (ios) toast(`Tick sent (iPhone switch trick, iOS ${ios[1]}.${ios[2]}). Needs iOS 18+ and Settings → Sounds & Haptics → System Haptics on.`);
+  else toast('This device has no haptics (laptops can\'t tick).');
+}
 // A short tick: Android vibrates, iPhone (iOS 18+) ticks when a hidden switch is toggled. Laptops: nothing.
 function haptic() {
   try {
@@ -1322,6 +1330,7 @@ function onTagAreaClick(e) {
   if (act === 'theme') return nextTheme();
   if (act === 'set-theme') { ui.theme = b.dataset.v; saveUi(); applyTheme(); return renderLeft(); }
   if (act === 'sound') return toggleSound();
+  if (act === 'test-haptic') return testHaptic();
   if (act === 'done') return doneOpen ? closeSheet() : openDone();
   if (act === 'edit-cats') return openCats();
   if (act === 'export') return exportData();
@@ -2899,6 +2908,8 @@ function renderMe() {
       `<button data-act="set-theme" data-v="${k}" class="${theme === k ? 'on' : ''}">${icon(THEMES[k][0])} ${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
     <div class="me-section">Sound</div>
     <div class="me-card"><button class="me-row" data-act="sound">${icon(ui.sound === false ? 'bellOff' : 'bell')} Sound when a task is done <b>${ui.sound === false ? 'Off' : 'On'}</b></button></div>
+    <div class="me-section">Haptics</div>
+    <div class="me-card"><button class="me-row" data-act="test-haptic">${icon('check')} Test the tick when a task is done</button></div>
     <div class="me-section">Categories</div>
     <div class="me-card">${tagListHtml()}<button class="me-row" data-act="edit-cats">${icon('pencil')} Edit categories</button></div>
     <div class="me-section">Backup</div>
