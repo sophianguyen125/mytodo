@@ -14,6 +14,8 @@
   try { const u = JSON.parse(localStorage.getItem('todo-app-ui-v1') || '{}'), t = u.theme;
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
         if (u.color && u.color !== 'classic') document.documentElement.dataset.color = u.color; } catch (e) {}
+  // No opening animation right after a pull-to-refresh
+  try { if (sessionStorage.getItem('mytodo-refresh')) { document.documentElement.classList.add('no-splash'); sessionStorage.removeItem('mytodo-refresh'); } } catch (e) {}
 </script>
 <style>
 :root {
@@ -605,6 +607,23 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .tabbar .tab.on { color: var(--text); font-weight: 600; }
 .tabbar .tab.on .ic { filter: none; opacity: 1; }
 .tabbar .tab.on img { opacity: 1; box-shadow: 0 0 0 2px var(--accent); }
+/* Opening animation: logo pops in, circles pop, lines draw, then it shrinks and fades into the app */
+.splash {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg);
+  animation: splashOut .3s ease-in .8s forwards;
+}
+.no-splash .splash, .splash.gone { display: none; }
+.splash svg { width: 88px; height: 88px; animation: splashPop .25s cubic-bezier(.2, 1.4, .4, 1) both, splashShrink .3s ease-in .8s forwards; }
+.splash circle { transform-box: fill-box; transform-origin: center; animation: dotPop .16s cubic-bezier(.2, 1.6, .4, 1) both; }
+.splash .c1 { animation-delay: .18s; } .splash .c2 { animation-delay: .28s; } .splash .c3 { animation-delay: .38s; }
+.splash path { stroke-dasharray: 8; stroke-dashoffset: 8; animation: lineDraw .16s ease-out forwards; }
+.splash .l1 { animation-delay: .45s; } .splash .l2 { animation-delay: .55s; } .splash .l3 { animation-delay: .65s; }
+@keyframes splashPop { from { transform: scale(.3); opacity: 0; } }
+@keyframes dotPop { from { transform: scale(0); } }
+@keyframes lineDraw { to { stroke-dashoffset: 0; } }
+@keyframes splashShrink { to { transform: scale(.6); } }
+@keyframes splashOut { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .splash { display: none; } }
 /* Pull-to-refresh arrow (phone) */
 .ptr {
   position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 50%; z-index: 27; width: 38px; height: 38px; margin-left: -19px;
@@ -682,6 +701,18 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 </style>
 </head>
 <body>
+<!-- Opening animation (0.8 s) when the app really starts; a tap skips it -->
+<div class="splash" id="splash" aria-hidden="true">
+  <svg viewBox="0 0 24 24">
+    <defs><linearGradient id="splashGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9a7f5"/><stop offset="1" stop-color="#5b7cf0"/></linearGradient></defs>
+    <rect width="24" height="24" rx="6" fill="url(#splashGrad)"/>
+    <circle class="c1" cx="7.5" cy="7.6" r="1.9" fill="#fff"/><circle class="c2" cx="7.5" cy="12" r="1.9" fill="#fff"/>
+    <circle class="c3" cx="7.5" cy="16.4" r="1.5" fill="none" stroke="#fff" stroke-width=".9"/>
+    <g stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none">
+      <path class="l1" d="M11 7.6h7"/><path class="l2" d="M11 12h6"/><path class="l3" d="M11 16.4h5" opacity=".7"/>
+    </g>
+  </svg>
+</div>
 <div class="app">
   <!-- Left: categories (full column, or thin bar in a small window) -->
   <aside class="col col-left" id="left"></aside>
@@ -3212,6 +3243,7 @@ document.addEventListener('touchend', () => {
   if (p.dy < PULL_READY) return hidePtr();
   ptr.classList.add('spin'); ptr.style.transition = ''; ptr.style.transform = 'translateY(30px)';
   flushText(); save();   // tasks are saved before the reload
+  try { sessionStorage.setItem('mytodo-refresh', '1'); } catch (e) { /* the opening animation then just shows */ }
   setTimeout(() => location.reload(), 350);
 });
 // Trackpad: two fingers sideways. A short swipe (60px) is enough; one swipe = one screen.
@@ -3299,6 +3331,12 @@ sheet.addEventListener('wheel', e => {
 }, { passive: false });
 
 /* ---------- Start ---------- */
+// The opening animation removes itself when it ends; a tap skips it
+const splash = $('#splash');
+const endSplash = () => splash.classList.add('gone');
+splash.addEventListener('animationend', e => { if (e.animationName === 'splashOut') endSplash(); });
+splash.addEventListener('pointerdown', endSplash);
+setTimeout(endSplash, 1500);   // in case an animation event is missed
 document.body.dataset.screen = 'tasks';
 makeHapticSwitch();
 if (ui.google) gState = 'paused';   // after opening, the first click reconnects to Google
