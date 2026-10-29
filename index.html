@@ -793,6 +793,14 @@ function applyGoogle(t, g, cats) {
   }
   t.text = title || t.text || '(no title)';
   t.doDay = g.due ? g.due.slice(0, 10) : null;
+  // Priority and deadline are in the notes, as toGoogle writes them ("Priority: !! …", "Deadline: 20/11")
+  const notes = g.notes || '';
+  const pri = notes.match(/^Priority: (!{1,3})/m);
+  t.priority = pri ? pri[1].length : 0;
+  const dl = notes.match(/^Deadline: (\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/m);
+  if (!dl) t.deadline = null;
+  else if (!t.deadline || dl[3] || t.deadline.slice(5) !== pad(dl[2]) + '-' + pad(dl[1]))   // keep the year if the day is the same
+    t.deadline = parseDate(dl[1] + '.' + dl[2] + (dl[3] ? '.' + dl[3] : ''), t.doDay || toKey(new Date())) || t.deadline || null;
   const done = g.status === 'completed';
   if (done !== !!t.done) { t.done = done; t.doneAt = done ? (Date.parse(g.completed) || Date.now()) : null; }
   return t;
@@ -872,7 +880,7 @@ function nextColor(cats) {
 }
 function defaultData() {
   const cats = ['University', 'Personal', 'Job', 'Shopping']
-    .map(n => ({ id: n === 'University' ? 'university' : uid() + n, name: n, parent: null }));
+    .map(n => ({ id: n.toLowerCase(), name: n, parent: null }));   // same ids on every device, so syncing does not copy them
   return { tasks: [], categories: cats };
 }
 function withColors(d) {
@@ -950,6 +958,7 @@ function haptic() {
 }
 
 let data = load();
+if (dedupeCategories(data)) save();
 let ui = loadUi();          // which categories are open, whether "Done" is shown, theme
 let currentDay = todayKey();
 let addingCat = false;      // "+ New category" input is open
@@ -990,6 +999,37 @@ function redo() {
   toast('Redone');
 }
 // Marks changed tasks/categories with the time of the change, and remembers deletions
+// Categories with the same name and parent are one category. Older versions gave the starting
+// categories new ids on every device, so syncing made copies. Keeps one (the same one on every device),
+// moves its tasks and sub-categories there, and marks the copies deleted so other devices drop them too.
+function dedupeCategories(d) {
+  const now = Date.now(), moved = {};
+  const pick = (a, b) => (a.id === a.name.toLowerCase()) - (b.id === b.name.toLowerCase()) || (a.id < b.id ? 1 : -1);
+  const bump = x => { x.updatedAt = Math.max(now, (x.updatedAt || 0) + 1); };
+  let changed = false;
+  for (const level of [false, true]) {   // main categories first, then sub-categories
+    const groups = new Map();
+    for (const c of d.categories.filter(c => !!c.parent === level)) {
+      if (c.parent && moved[c.parent]) { c.parent = moved[c.parent]; bump(c); changed = true; }
+      const key = c.name.trim().toLowerCase() + '|' + (c.parent || '');
+      groups.set(key, [...(groups.get(key) || []), c]);
+    }
+    for (const list of groups.values()) {
+      if (list.length < 2) continue;
+      const [keep, ...copies] = list.sort(pick).reverse();
+      for (const c of copies) {
+        moved[c.id] = keep.id;
+        d.deleted[c.id] = { at: Math.max(now, (c.updatedAt || 0) + 1), kind: 'categories' };
+      }
+      changed = true;
+    }
+  }
+  if (!changed) return false;
+  d.categories = d.categories.filter(c => !moved[c.id]);
+  d.categories.forEach(c => { if (moved[c.parent]) { c.parent = moved[c.parent]; bump(c); } });
+  d.tasks.forEach(t => { if (moved[t.category]) { t.category = moved[t.category]; bump(t); } });
+  return true;
+}
 function stampChanges(beforeStr) {
   const before = JSON.parse(beforeStr), now = Date.now();
   const plain = o => { const { updatedAt, ...rest } = o; return JSON.stringify(rest); };
@@ -2420,6 +2460,7 @@ async function syncNow() {
     const before = JSON.stringify(data);
     const remote = await driveRead();
     if (remote && Array.isArray(remote.tasks)) data = withColors(mergeData(data, remote));
+    dedupeCategories(data);
     if (ui.google.calendar) await tasksSync();
     const old = Date.now() - 60 * 86400000;   // forget deletions older than 60 days
     for (const [id, d] of Object.entries(data.deleted)) if (d.at < old) delete data.deleted[id];
