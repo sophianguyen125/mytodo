@@ -472,8 +472,12 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .task .late { color: var(--danger); font-size: 12.5px; margin-top: 3px; font-weight: 500; }
 
 /* Progress ring around the tick circle (tasks with sub-tasks) */
+/* iPhone haptics: an invisible label over tap targets; a real tap on it ticks the hidden switch (iOS 26.5+) */
+.tick { position: absolute; inset: -6px; z-index: 1; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.tick-wrap { position: relative; display: inline-flex; flex: none; }
+.tabbar .tab, .me-row { position: relative; cursor: pointer; }
 .ring {
-  width: 26px; height: 26px; border-radius: 50%; flex: none; display: grid; place-items: center; margin: -2px -3px 0;
+  position: relative; width: 26px; height: 26px; border-radius: 50%; flex: none; display: grid; place-items: center; margin: -2px -3px 0;
   background: conic-gradient(var(--i-green) calc(var(--p) * 1%), var(--line) 0);
 }
 .ring .check { width: 20px; height: 20px; margin: 0; border: 0; background: var(--panel); }
@@ -542,15 +546,15 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   background: color-mix(in srgb, var(--panel) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
 }
-.tabbar button {
+.tabbar .tab {
   flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 3px 0; font-size: 11px; color: var(--muted);
 }
 .tabbar .ic { width: 24px; height: 24px; filter: grayscale(1); opacity: .5; transition: opacity .15s, filter .15s; }
 .tabbar img { width: 24px; height: 24px; border-radius: 50%; opacity: .6; }
-.tabbar button.on { color: var(--text); font-weight: 600; }
-.tabbar button.on .ic { filter: none; opacity: 1; }
-.tabbar button.on img { opacity: 1; box-shadow: 0 0 0 2px var(--accent); }
+.tabbar .tab.on { color: var(--text); font-weight: 600; }
+.tabbar .tab.on .ic { filter: none; opacity: 1; }
+.tabbar .tab.on img { opacity: 1; box-shadow: 0 0 0 2px var(--accent); }
 /* Done and Me screens */
 .screen-title { margin: 0 0 18px; font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
 .me-section { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 22px 4px 8px; }
@@ -1072,25 +1076,28 @@ function testHaptic() {
   haptic();
   const ios = navigator.userAgent.match(/OS (\d+)[_.](\d+)[^)]* like Mac OS X/);
   if (navigator.vibrate) toast('Tick sent (Android vibration). Did you feel it?');
-  else if (ios) toast(`Tick sent (iPhone switch trick, iOS ${ios[1]}.${ios[2]}). Needs iOS 18+ and Settings → Sounds & Haptics → System Haptics on.`);
+  else if (ios) toast('Tick sent. On iPhone only taps tick: the task circle, the bottom bar and this button (needs System Haptics on).');
   else toast('This device has no haptics (laptops can\'t tick).');
 }
 // A short tick: Android vibrates, iPhone (iOS 18+) ticks when a hidden switch is toggled. Laptops: nothing.
-// The switch must really be on the page (not display:none), only invisible, or the iPhone does not tick.
-let hapticLabel = null;
+// iPhone: the only tick a web page gets is the one of <input type="checkbox" switch>.
+// iOS 26.5+ only ticks for a real finger tap on a label of that switch: those labels (TICK) lie over the
+// task circles, the bottom bar and the Test button. Older iOS also ticks from code (hapticLabel.click()).
+const TICK = '<label class="tick" for="hapticSwitch" aria-hidden="true"></label>';
+let hapticLabel = null, lastTickTap = 0;
+function makeHapticSwitch() {
+  const sw = document.createElement('input');
+  sw.type = 'checkbox'; sw.setAttribute('switch', ''); sw.id = 'hapticSwitch'; sw.setAttribute('aria-hidden', 'true');
+  Object.assign(sw.style, { position: 'fixed', left: '0', top: '0', width: '1px', height: '1px', margin: '0', visibility: 'hidden', pointerEvents: 'none' });
+  hapticLabel = document.createElement('label'); hapticLabel.htmlFor = 'hapticSwitch'; hapticLabel.hidden = true;
+  document.body.append(sw, hapticLabel);
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('label.tick')) lastTickTap = Date.now(); }, true);
 function haptic() {
   try {
     if (navigator.vibrate) { navigator.vibrate(12); return; }
-    if (!hapticLabel) {
-      const sw = document.createElement('input');
-      sw.type = 'checkbox'; sw.setAttribute('switch', ''); sw.id = 'hapticSwitch'; sw.tabIndex = -1;
-      hapticLabel = document.createElement('label'); hapticLabel.htmlFor = 'hapticSwitch';
-      for (const el of [sw, hapticLabel]) {
-        el.setAttribute('aria-hidden', 'true');
-        Object.assign(el.style, { position: 'fixed', left: '0', top: '0', width: '1px', height: '1px', margin: '0', opacity: '0.01', pointerEvents: 'none' });
-      }
-      document.body.append(sw, hapticLabel);
-    }
+    if (Date.now() - lastTickTap < 400) return;   // the finger already ticked the switch
+    if (!hapticLabel) makeHapticSwitch();
     hapticLabel.click();
   } catch (e) { /* no haptics on this device */ }
 }
@@ -1326,7 +1333,7 @@ function addCategory(name, parent = null) {
 }
 
 function onTagAreaClick(e) {
-  const b = e.target.closest('button'); if (!b) return;
+  const b = e.target.closest('button, [role="button"]'); if (!b) return;
   if (b.dataset.toggle) { ui.open[b.dataset.toggle] = !ui.open[b.dataset.toggle]; saveUi(); return renderLeft(); }
   if (b.dataset.tag) {
     const inPop = !!b.closest('#catPop'), inMe = !!b.closest('#meScreen');
@@ -1478,7 +1485,7 @@ function taskHtml(t, o = {}) {
     late = `<div class="late">${DAY_LABELS[fromKey(t.doDay).getDay()]} ${fmt(t.doDay)} · ${n} day${n > 1 ? 's' : ''} ago</div>`;
   }
   let h = `<li class="task${t.priority ? ' pr' + t.priority : ''}${t.done ? ' done' : ''}${overdue ? ' is-overdue' : ''}" data-id="${t.id}" draggable="${!t.done && !TOUCH.matches}">
-      ${subs.length ? `<span class="ring" style="--p:${pct}">${check}</span>` : check}
+      ${subs.length ? `<span class="ring" style="--p:${pct}">${check}${TICK}</span>` : `<span class="tick-wrap">${check}${TICK}</span>`}
       <div class="body"><div class="title">${esc(t.text)}</div>${late}<div class="meta">${taskChips(t, o.showDay)}</div></div>
       ${subs.length ? `<button class="tog-sub${open ? ' open' : ''}" title="${open ? 'Hide' : 'Show'} sub-tasks">›</button>` : ''}
       ${t.done ? '' : '<button class="more" title="More: duplicate, move, delete">···</button>'}
@@ -1603,6 +1610,13 @@ function onListChange(e) {
   setTimeout(() => toggleDone(li.dataset.id, done), 350);
 }
 function onListClick(e) {
+  // A tap on the circle lands on its haptic label: tick the task here
+  const tk = e.target.closest('label.tick');
+  if (tk && tk.closest('.task')) {
+    const c = tk.parentElement.querySelector('.check');
+    c.checked = !c.checked;
+    return c.dispatchEvent(new Event('change', { bubbles: true }));
+  }
   const add = e.target.closest('[data-add]');
   if (add) { inlineDay = add.dataset.add; renderMiddle(); return; }
   const li = e.target.closest('.task'); if (!li) return;
@@ -1753,7 +1767,7 @@ function autoScroll() {
 }
 document.addEventListener('touchstart', e => {
   const li = e.target.closest && e.target.closest('#list .task, #inbox .task');
-  if (e.touches.length !== 1 || !li || li.classList.contains('done') || e.target.closest('input, button')) return;
+  if (e.touches.length !== 1 || !li || li.classList.contains('done') || e.target.closest('input, button, label')) return;
   const t = e.touches[0];
   hold = { id: li.dataset.id, li, x: t.clientX, y: t.clientY };
   hold.timer = setTimeout(startDrag, 450);
@@ -2876,7 +2890,7 @@ function closeAcctPop() { $('#acctPop').hidden = true; }
 // ("click", because phones only allow Google's window after a full tap)
 document.addEventListener('click', e => {
   if (ui.google && gState === 'paused' && !reconnecting && Date.now() - lastReconnectTry > 5000 &&
-      !e.target.closest('[data-act="reconnect"], [data-act="signout"], #hapticSwitch, label[for="hapticSwitch"]')) reconnect();
+      !e.target.closest('[data-act="reconnect"], [data-act="signout"], #hapticSwitch')) reconnect();
 }, true);
 window.addEventListener('focus', () => syncNow());
 window.addEventListener('online', () => syncNow());
@@ -2904,7 +2918,7 @@ function renderScreen() {
   const g = ui.google;
   const me = g && g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : icon('user');
   $('#tabbar').innerHTML = [['tasks', icon('list'), 'Tasks'], ['inbox', icon('inbox'), 'Inbox'], ['done', icon('check'), 'Done'], ['me', me, 'Me']]
-    .map(([k, ic, label]) => `<button data-screen="${k}" class="${screen === k ? 'on' : ''}"${DROP_TABS[k] ? ` data-drop="${DROP_TABS[k]}"` : ''}>${ic}<span>${label}</span></button>`).join('');
+    .map(([k, ic, label]) => `<div role="button" tabindex="0" data-screen="${k}" class="tab${screen === k ? ' on' : ''}"${DROP_TABS[k] ? ` data-drop="${DROP_TABS[k]}"` : ''}>${ic}<span>${label}</span>${TICK}</div>`).join('');   // not <button>: a label inside a button gets no tap
   // On the phone the screens next to this one show while swiping, so they are always drawn
   if (screen === 'done' || NARROW.matches) $('#doneScreen').innerHTML = doneHtml();
   if (screen === 'me' || NARROW.matches) renderMe();
@@ -2919,13 +2933,15 @@ function renderMe() {
     <div class="me-section">Sound</div>
     <div class="me-card"><button class="me-row" data-act="sound">${icon(ui.sound === false ? 'bellOff' : 'bell')} Sound when a task is done <b>${ui.sound === false ? 'Off' : 'On'}</b></button></div>
     <div class="me-section">Haptics</div>
-    <div class="me-card"><button class="me-row" data-act="test-haptic">${icon('check')} Test the tick when a task is done</button></div>
+    <div class="me-card"><div class="me-row" role="button" data-act="test-haptic">${icon('check')} Test the tick when a task is done${TICK}</div></div>
     <div class="me-section">Categories</div>
     <div class="me-card">${tagListHtml()}<button class="me-row" data-act="edit-cats">${icon('pencil')} Edit categories</button></div>
     <div class="me-section">Backup</div>
     <div class="me-card"><button class="me-row" data-act="export">${icon('download')} Export</button><button class="me-row" data-act="import">${icon('upload')} Import</button></div>`;
 }
-$('#tabbar').addEventListener('click', e => { const b = e.target.closest('[data-screen]'); if (b) setScreen(b.dataset.screen); });
+// After the tap, so the bar is redrawn only once the tap reached the haptic switch
+$('#tabbar').addEventListener('click', e => { const b = e.target.closest('[data-screen]'); if (b) setTimeout(() => setScreen(b.dataset.screen)); });
+$('#tabbar').addEventListener('keydown', e => { const b = e.target.closest('[data-screen]'); if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setScreen(b.dataset.screen); } });
 ['change', 'click'].forEach(ev => $('#doneScreen').addEventListener(ev, ev === 'change' ? onListChange : onListClick));
 
 // Swipe sideways (finger, or two fingers on a trackpad): the screens follow, then snap to the next one or back
@@ -3051,6 +3067,7 @@ sheet.addEventListener('wheel', e => {
 
 /* ---------- Start ---------- */
 document.body.dataset.screen = 'tasks';
+makeHapticSwitch();
 if (ui.google) gState = 'paused';   // after opening, the first click reconnects to Google
 $('#aiTitle').insertAdjacentHTML('afterbegin', icon('sparkle'));
 $('#mDup').innerHTML = icon('copy') + ' Duplicate';
