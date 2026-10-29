@@ -10,9 +10,10 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <meta name="theme-color" content="#7c8cf2">
 <script>
-  // Apply the saved light/dark choice before the page is drawn
-  try { const t = JSON.parse(localStorage.getItem('todo-app-ui-v1') || '{}').theme;
-        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  // Apply the saved light/dark choice and colour theme before the page is drawn
+  try { const u = JSON.parse(localStorage.getItem('todo-app-ui-v1') || '{}'), t = u.theme;
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        if (u.color && u.color !== 'classic') document.documentElement.dataset.color = u.color; } catch (e) {}
 </script>
 <style>
 :root {
@@ -51,6 +52,31 @@
   --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b; --fab: #34478f;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3); --shadow-md: 0 6px 18px rgba(0, 0, 0, .35); --shadow-lg: 0 16px 44px rgba(0, 0, 0, .55);
 }
+/* ---------- Colour themes (each with light and dark; Classic is the colours above). Tag colours never change. ---------- */
+:root[data-color="focus"]   { --bg: #f2f5f9; --panel: #ffffff; --side: #e9eef5; --line: #dbe2ec; --hover: #e4e9f1; --text: #0f1b2d; --muted: #5b6b80; --accent: #1e3a8a; --accent-soft: #dbe4f7; --fab: #0f1b2d; --done: #1f8a5b; }
+:root[data-color="cozy"]    { --bg: #f8f1e5; --panel: #fffaf2; --side: #f0e5d3; --line: #e6d7bf; --hover: #efe2cd; --text: #3b2a1e; --muted: #8a735e; --accent: #a0612b; --accent-soft: #f3e0c8; --fab: #5a3a22; --done: #6b9a5b; }
+:root[data-color="playful"] { --bg: #fff5f9; --panel: #ffffff; --side: #fdeef5; --line: #f5d9e7; --hover: #fbe6f0; --text: #3a2340; --muted: #9a7aa0; --accent: #e0569a; --accent-soft: #fde1ef; --fab: #c23d7f; --done: #34b98a; }
+:root[data-color="calm"]    { --bg: #f2f5ef; --panel: #fbfcf9; --side: #e8ede3; --line: #dbe2d3; --hover: #e4eadd; --text: #26302a; --muted: #6f7d72; --accent: #4f7d5f; --accent-soft: #dfeae2; --fab: #2f4a3a; --done: #5b9a6e; }
+@media (prefers-color-scheme: dark) {
+  :root[data-color="focus"]:not([data-theme="light"])   { --bg: #0c1320; --panel: #141e2f; --side: #101827; --line: #23314a; --hover: #1b283f; --text: #e6edf7; --muted: #8a9ab3; --accent: #6b8cff; --accent-soft: #1c2a4c; --fab: #2a4590; --done: #4cc38a; }
+  :root[data-color="cozy"]:not([data-theme="light"])    { --bg: #1f1813; --panel: #2a211a; --side: #241c16; --line: #3a2e24; --hover: #33281f; --text: #f1e6d6; --muted: #b09a83; --accent: #d99a5b; --accent-soft: #4a3523; --fab: #8a5a33; --done: #8fbf7a; }
+  :root[data-color="playful"]:not([data-theme="light"]) { --bg: #1f1622; --panel: #2a1f2e; --side: #241a28; --line: #3a2b40; --hover: #33263a; --text: #f6e9f3; --muted: #b597b5; --accent: #ff7ab8; --accent-soft: #4a2440; --fab: #c23d7f; --done: #5fd6a8; }
+  :root[data-color="calm"]:not([data-theme="light"])    { --bg: #151a16; --panel: #1e251f; --side: #1a201b; --line: #2c362e; --hover: #253027; --text: #e3ebe4; --muted: #93a497; --accent: #86b896; --accent-soft: #22362a; --fab: #3f6a50; --done: #86b896; }
+}
+:root[data-color="focus"][data-theme="dark"]   { --bg: #0c1320; --panel: #141e2f; --side: #101827; --line: #23314a; --hover: #1b283f; --text: #e6edf7; --muted: #8a9ab3; --accent: #6b8cff; --accent-soft: #1c2a4c; --fab: #2a4590; --done: #4cc38a; }
+:root[data-color="cozy"][data-theme="dark"]    { --bg: #1f1813; --panel: #2a211a; --side: #241c16; --line: #3a2e24; --hover: #33281f; --text: #f1e6d6; --muted: #b09a83; --accent: #d99a5b; --accent-soft: #4a3523; --fab: #8a5a33; --done: #8fbf7a; }
+:root[data-color="playful"][data-theme="dark"] { --bg: #1f1622; --panel: #2a1f2e; --side: #241a28; --line: #3a2b40; --hover: #33263a; --text: #f6e9f3; --muted: #b597b5; --accent: #ff7ab8; --accent-soft: #4a2440; --fab: #c23d7f; --done: #5fd6a8; }
+:root[data-color="calm"][data-theme="dark"]    { --bg: #151a16; --panel: #1e251f; --side: #1a201b; --line: #2c362e; --hover: #253027; --text: #e3ebe4; --muted: #93a497; --accent: #86b896; --accent-soft: #22362a; --fab: #3f6a50; --done: #86b896; }
+/* the 3 colour dots shown for each theme in the menus */
+.dots { display: inline-flex; gap: 3px; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.theme-pop { width: 260px; }
+.title-row { display: flex; align-items: center; gap: 8px; }
+.title-row h1 { flex: 1; min-width: 0; }
+.title-btns { display: flex; gap: 8px; }
+@media (max-width: 999px) { .title-btns { display: none; } }   /* phone: on the Me screen */
+.theme-pop .seg { margin-bottom: 6px; }
+.me-row.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overscroll-behavior-x: none; }   /* no "swipe back" page change */
 body {
@@ -625,7 +651,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   <!-- Middle: tasks with a day -->
   <main class="col col-mid">
     <div class="mid-head">
-      <h1 id="viewTitle">Tasks</h1>
+      <div class="title-row"><h1 id="viewTitle">Tasks</h1><div class="title-btns" id="titleBtns"></div></div>
       <div class="subtitle" id="viewSub"></div>
       <div class="tag-bar" id="tagBar"></div>
     </div>
@@ -699,6 +725,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 </dialog>
 
 <div class="popover" id="acctPop" hidden></div>
+<div class="popover theme-pop" id="themePop" hidden></div>
 <dialog id="outDlg">
   <h2>Sign out</h2>
   <p>Keep your tasks on this device?</p>
@@ -1034,15 +1061,36 @@ function loadUi() {
 function saveUi() { try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } catch (e) { /* ignore */ } }
 
 const THEMES = { auto: ['auto', 'Auto (follows your Mac)'], light: ['sun', 'Light'], dark: ['moon', 'Dark'] };
+// Colour themes: name and 3 dots for the menus (the colours themselves are in the CSS)
+const COLORS = {
+  classic: ['Classic', ['#4f6ef7', '#f7f6f3', '#1f2d5c']],
+  focus: ['Focus', ['#1e3a8a', '#dbe2ec', '#0f1b2d']],
+  cozy: ['Cozy', ['#a0612b', '#f3e0c8', '#5a3a22']],
+  playful: ['Playful', ['#e0569a', '#c9f0dc', '#fdf1b8']],
+  calm: ['Calm', ['#4f7d5f', '#dfeae2', '#b9b4a8']],
+};
 function applyTheme() {
   if (ui.theme === 'light' || ui.theme === 'dark') document.documentElement.dataset.theme = ui.theme;
   else delete document.documentElement.dataset.theme;
+  if (ui.color && COLORS[ui.color] && ui.color !== 'classic') document.documentElement.dataset.color = ui.color;
+  else delete document.documentElement.dataset.color;
 }
-function nextTheme() {
-  ui.theme = { auto: 'light', light: 'dark', dark: 'auto' }[ui.theme] || 'auto';
-  saveUi(); applyTheme(); renderLeft();
-  toast('Theme: ' + THEMES[ui.theme][1]);
+// Auto / Light / Dark, then the 5 colour themes (used in the laptop menu and on the Me screen)
+function themeChoicesHtml() {
+  const mode = THEMES[ui.theme] ? ui.theme : 'auto', color = COLORS[ui.color] ? ui.color : 'classic';
+  return `<div class="seg">${['auto', 'light', 'dark'].map(k =>
+      `<button data-act="set-theme" data-v="${k}" class="${mode === k ? 'on' : ''}">${icon(THEMES[k][0])} ${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>` +
+    Object.entries(COLORS).map(([k, [name, dots]]) =>
+      `<button class="me-row${color === k ? ' on' : ''}" data-act="set-color" data-v="${k}">
+         <span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span>${name}${color === k ? '<b>✓</b>' : ''}</button>`).join('');
 }
+function openThemePop(btn) {
+  const pop = $('#themePop'), r = btn.getBoundingClientRect();
+  pop.innerHTML = themeChoicesHtml(); pop.hidden = false;
+  pop.style.left = Math.min(r.left, innerWidth - pop.offsetWidth - 10) + 'px';
+  pop.style.top = Math.min(r.bottom + 6, innerHeight - pop.offsetHeight - 10) + 'px';
+}
+function closeThemePop() { $('#themePop').hidden = true; }
 
 /* ---------- Sound and haptics when a task is finished ---------- */
 const soundTitle = () => 'Sound: ' + (ui.sound === false ? 'off' : 'on') + ' — click to change';
@@ -1263,9 +1311,7 @@ function renderLeft() {
   const popOpen = !$('#catPop').hidden;
   $('#left').innerHTML = `
     <div class="full">
-      <div class="brand">${logo('logoFull')}<b>Mytodo</b>
-        <button class="icon-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
-        <button class="icon-btn" data-act="theme" title="Theme: ${themeName} — click to change">${icon(themeIcon)}</button></div>
+      <div class="brand">${logo('logoFull')}<b>Mytodo</b></div>
       <div class="section-title">Categories</div>
       ${tagListHtml()}
       ${accountHtml()}
@@ -1292,6 +1338,9 @@ function renderLeft() {
       <button class="bar-btn" data-act="import" title="Import (restore backup)">${icon('upload')}</button>
     </div>`;
   if (popOpen) renderCatPop();
+  // Laptop: sound and theme buttons on the right of the "Tasks" title (the phone has them on the Me screen)
+  $('#titleBtns').innerHTML = `<button class="icon-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
+    <button class="icon-btn" data-act="theme" title="Theme: ${themeName} — click to change">${icon(themeIcon)}</button>`;
   renderScreen();
   if (addingCat) focusVisible('.new-cat-input');
 }
@@ -1343,8 +1392,13 @@ function onTagAreaClick(e) {
   const act = b.dataset.act;
   if (act === 'new-cat') { addingCat = true; renderLeft(); return; }
   if (act === 'cat-pop') { $('#catPop').hidden ? openCatPop(b) : closeCatPop(); return; }
-  if (act === 'theme') return nextTheme();
-  if (act === 'set-theme') { ui.theme = b.dataset.v; saveUi(); applyTheme(); return renderLeft(); }
+  if (act === 'theme') return $('#themePop').hidden ? openThemePop(b) : closeThemePop();
+  if (act === 'set-theme' || act === 'set-color') {
+    ui[act === 'set-theme' ? 'theme' : 'color'] = b.dataset.v;
+    saveUi(); applyTheme(); renderLeft();
+    if (!$('#themePop').hidden) $('#themePop').innerHTML = themeChoicesHtml();
+    return;
+  }
   if (act === 'sound') return toggleSound();
   if (act === 'test-haptic') return testHaptic();
   if (act === 'done') return doneOpen ? closeSheet() : openDone();
@@ -1367,7 +1421,7 @@ function onTagAreaBlur(e) {
     if (addingCat && !document.activeElement.classList.contains('new-cat-input')) { addingCat = false; renderLeft(); }
   }, 150);
 }
-['#left', '#catPop', '#acctPop', '#meScreen'].forEach(s => {
+['#left', '#catPop', '#acctPop', '#meScreen', '#themePop', '#titleBtns'].forEach(s => {
   $(s).addEventListener('change', e => { if (e.target.dataset.act === 'calendar') setCalendar(e.target.checked); });
   $(s).addEventListener('click', onTagAreaClick);
   $(s).addEventListener('keydown', onTagAreaKey);
@@ -1381,6 +1435,7 @@ function onTagAreaBlur(e) {
 document.addEventListener('mousedown', e => {
   if (!$('#catPop').hidden && !e.target.closest('#catPop, [data-act="cat-pop"], #ctx')) closeCatPop();
   if (!$('#acctPop').hidden && !e.target.closest('#acctPop, [data-act="acct-pop"]')) closeAcctPop();
+  if (!$('#themePop').hidden && !e.target.closest('#themePop, [data-act="theme"]')) closeThemePop();
   if (!$('#ctx').hidden && !e.target.closest('#ctx') && Date.now() - menuOpenedAt > 600) closeCtx();
 });
 
@@ -2924,12 +2979,10 @@ function renderScreen() {
   if (screen === 'me' || NARROW.matches) renderMe();
 }
 function renderMe() {
-  const theme = THEMES[ui.theme] ? ui.theme : 'auto';
   $('#meScreen').innerHTML = `<h1 class="screen-title">Me</h1>
     <div class="me-card">${accountHtml()}</div>
     <div class="me-section">Theme</div>
-    <div class="me-card seg">${['auto', 'light', 'dark'].map(k =>
-      `<button data-act="set-theme" data-v="${k}" class="${theme === k ? 'on' : ''}">${icon(THEMES[k][0])} ${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
+    <div class="me-card">${themeChoicesHtml()}</div>
     <div class="me-section">Sound</div>
     <div class="me-card"><button class="me-row" data-act="sound">${icon(ui.sound === false ? 'bellOff' : 'bell')} Sound when a task is done <b>${ui.sound === false ? 'Off' : 'On'}</b></button></div>
     <div class="me-section">Haptics</div>
