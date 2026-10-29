@@ -37,6 +37,6 @@ Example: `Read chapter 3 /tmr !! /university /dl 20.11`
 
 ## Feedback
 
-Ideas or problems? Email me: sophianguyen125 [at] gmail [dot] com
+Ideas or problems? Email me: sophianguyen125@gmail.com
 
 Made by Sophia Nguyen.
