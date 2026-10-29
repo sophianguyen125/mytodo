@@ -26,6 +26,7 @@
   --shadow-md: 0 6px 18px rgba(30, 30, 40, .09);
   --shadow-lg: 0 16px 44px rgba(30, 30, 40, .18);
   --tag-text: #23262d;
+  --fab: #1f2d5c;
   /* icon colors */
   --i-yellow: #f3c55a; --i-indigo: #a3a6f0; --i-lavender: #b9a8f3; --i-blue: #8fb8f2; --i-teal: #7fd1c6;
   --i-orange: #f4ad86; --i-green: #8fd3a8; --i-purple: #c9a2ee; --i-bluegrey: #a9b6c6; --i-pink: #f2a7c3;
@@ -37,7 +38,7 @@
     --line: #31343c; --hover: #2d3038; --accent: #7d93ff; --accent-soft: #2b3150;
     --danger: #ff6b6b; --danger-soft: #3b2427; --warn: #f0aa45; --warn-soft: #3a301e;
     --done: #5ccf8f; --done-soft: #1f3329;
-    --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b;
+    --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b; --fab: #34478f;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3); --shadow-md: 0 6px 18px rgba(0, 0, 0, .35); --shadow-lg: 0 16px 44px rgba(0, 0, 0, .55);
   }
 }
@@ -47,7 +48,7 @@
   --line: #31343c; --hover: #2d3038; --accent: #7d93ff; --accent-soft: #2b3150;
   --danger: #ff6b6b; --danger-soft: #3b2427; --warn: #f0aa45; --warn-soft: #3a301e;
   --done: #5ccf8f; --done-soft: #1f3329;
-  --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b;
+  --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b; --fab: #34478f;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3); --shadow-md: 0 6px 18px rgba(0, 0, 0, .35); --shadow-lg: 0 16px 44px rgba(0, 0, 0, .55);
 }
 * { box-sizing: border-box; }
@@ -158,25 +159,26 @@ button { cursor: pointer; }
 .mid-head { position: sticky; top: 0; z-index: 10; background: var(--bg); padding: 30px 0 14px; transition: background .25s; }
 .mid-head h1 { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
 .subtitle { color: var(--muted); margin: 4px 0 16px; font-size: 16px; }
-.add-box {
-  position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 6px 6px 10px;
-  box-shadow: var(--shadow-sm); transition: box-shadow .2s, border-color .2s;
+/* Tag row above the tasks: tap one to show only its tasks */
+.trow { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+.trow::-webkit-scrollbar { display: none; }
+.trow.sub { margin-top: 6px; }
+.tchip {
+  flex: none; border: 0; border-radius: 6px; padding: 3px 10px; font-size: 14px; font-weight: 500; white-space: nowrap;
+  background: var(--c); color: var(--tag-text); color: hsl(from var(--c) h s 30%); transition: opacity .2s;
 }
-.add-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-md); }
-.add-row { display: flex; gap: 8px; align-items: center; }
-.add-row > .ic { color: var(--muted); }
-.input-wrap { position: relative; flex: 1; min-width: 0; }
-.input-wrap input, .overlay {
-  font-size: 16px; padding: 8px 4px; letter-spacing: normal; font-family: inherit; line-height: 22px; border: 0; margin: 0;
+.tchip.all { --c: var(--hover); color: var(--text); }
+.trow.has-sel .tchip:not(.on) { opacity: .4; }
+.trow.has-sel .tchip:not(.on):hover { opacity: .75; }
+.trow .tchip.add { --c: transparent; color: var(--muted); padding: 3px 8px; opacity: 1 !important; }
+.trow .tchip.add:hover { --c: var(--hover); color: var(--text); }
+.tchip-input {
+  flex: none; width: 140px; border: 1px solid var(--accent); border-radius: 6px; padding: 2px 8px; font-size: 14px;
+  background: var(--panel); outline: 0;
 }
-.input-wrap input {
-  position: relative; z-index: 1; width: 100%; outline: 0; background: transparent;
-  color: transparent; -webkit-text-fill-color: transparent; caret-color: var(--text);
-}
-.input-wrap input::placeholder { color: var(--muted); -webkit-text-fill-color: var(--muted); }
-.overlay { position: absolute; inset: 0; white-space: pre; overflow: hidden; pointer-events: none; color: var(--text); }
-.overlay mark { background: var(--c); color: var(--tag-text); border-radius: 5px; box-shadow: 0 0 0 2px var(--c); }
-.overlay mark.cmd { --c: var(--hover); color: var(--text); }
+/* Long press on a task (touch screens): no text selection or system menu */
+@media (pointer: coarse) { .task { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; } }
+.menu .menu-date { width: 100%; margin: 2px 0 4px; border-color: var(--line); }
 .btn {
   border: 0; border-radius: 10px; padding: 8px 18px; background: var(--accent); color: #fff; font-weight: 600;
   transition: filter .15s, transform .1s; display: inline-flex; align-items: center; gap: 6px;
@@ -186,11 +188,6 @@ button { cursor: pointer; }
 .btn:disabled { opacity: .45; cursor: default; filter: none; transform: none; }
 .btn.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--line); font-weight: 500; }
 .btn.danger { background: transparent; color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger); font-weight: 500; }
-.btn.ai { background: var(--accent-soft); color: var(--accent); padding: 8px 12px; }
-.preview { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 4px 6px 32px; }
-.preview:empty { display: none; }
-.hint { color: var(--muted); font-size: 12px; margin: 10px 4px 0; opacity: .85; }
-.hint code { background: var(--hover); padding: 1px 5px; border-radius: 5px; font-size: 11.5px; font-family: ui-monospace, Menlo, monospace; }
 
 .suggest {
   position: absolute; left: 6px; right: 6px; top: calc(100% + 6px); z-index: 20; background: var(--panel);
@@ -201,6 +198,7 @@ button { cursor: pointer; }
 .suggest li.sel, .suggest li:hover { background: var(--accent-soft); }
 .suggest .s-label { font-family: ui-monospace, Menlo, monospace; font-size: 13px; min-width: 110px; }
 .suggest .s-desc { color: var(--muted); font-size: 13.5px; }
+#suggest { left: 22px; right: 22px; }
 .dot { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
 
 /* Groups and tasks */
@@ -349,18 +347,24 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .scrim { position: fixed; inset: 0; z-index: 30; background: rgba(12, 14, 20, .22); opacity: 0; transition: opacity .3s; }
 .scrim.open { opacity: 1; }
 .sheet {
-  position: fixed; z-index: 35; right: 20px; bottom: 0; width: min(460px, calc(100vw - 40px)); height: calc(100vh - 36px);
+  position: fixed; z-index: 35; left: 50%; bottom: 0; width: min(600px, calc(100vw - 40px)); height: 50vh; height: 50dvh;
+  min-height: min(400px, 90dvh);   /* half the screen, but tall enough for a new task in a small window */
   background: var(--panel); border-radius: 22px 22px 0 0; box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
-  transform: translateY(100%); transition: transform .32s cubic-bezier(.2, .8, .2, 1);
+  transform: translate(-50%, 100%); transition: transform .32s cubic-bezier(.2, .8, .2, 1);
 }
-.sheet.open { transform: none; }
+.sheet.open { transform: translateX(-50%); }
+/* Phone, new task: only the small box, right above the keyboard */
+.sheet.compact { height: auto; min-height: 0; max-height: 50dvh; }
+.sheet.compact .sheet-body { padding-bottom: 14px; }
+.more-details { margin: -12px 0 0 4px; }
+.sh-ai { flex: none; border: 0; border-radius: 10px; width: 34px; height: 34px; display: grid; place-items: center; background: var(--accent-soft); }
 .sheet-handle { width: 44px; height: 5px; border-radius: 9px; background: var(--line); margin: 10px auto 0; flex: none; }
 .sheet-top { display: flex; align-items: center; justify-content: space-between; padding: 4px 14px 0; position: relative; flex: none; }
 .sheet-top .ib { border: 0; background: none; width: 38px; height: 38px; border-radius: 10px; font-size: 22px; line-height: 1; color: var(--muted); }
 .sheet-top .ib:hover { background: var(--hover); color: var(--text); }
 .sheet-top .more-menu { position: absolute; right: 14px; top: 46px; }
-.sheet-body { overflow-y: auto; padding: 6px 22px 40px; flex: 1; }
-.sh-card { background: var(--bg); border-radius: 16px; padding: 14px 16px 6px; margin-bottom: 24px; }
+.sheet-body { overflow-y: auto; padding: 6px 22px 14px; flex: 1; }
+.sh-card { background: var(--bg); border-radius: 16px; padding: 14px 16px 6px; margin-bottom: 14px; }
 .sh-title-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
 .sh-title-row .check { width: 22px; height: 22px; margin-top: 4px; }
 .sh-title {
@@ -385,12 +389,12 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .seg button.on.p1 { color: var(--p1); border-color: var(--p1); }
 .seg button.on.p2 { color: var(--p2); border-color: var(--p2); }
 .seg button.on.p3 { color: var(--p3); border-color: var(--p3); }
-.sh-section { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; margin: 0 2px 10px; }
+.sh-section { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; margin: 0 2px 6px; }
 .sh-section .count { font-size: 12px; background: var(--hover); color: var(--muted); padding: 0 7px; border-radius: 99px; font-weight: 500; }
 .sh-section .count.all { background: var(--done-soft); color: var(--done); }
 .sh-desc {
-  width: 100%; min-height: 90px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); padding: 10px 12px;
-  resize: none; outline: 0; margin-bottom: 24px; line-height: 1.5; overflow: hidden; display: block;
+  width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); padding: 8px 12px;
+  resize: none; outline: 0; margin-bottom: 14px; line-height: 1.5; overflow: hidden; display: block;
 }
 .sh-desc:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .subs { list-style: none; margin: 0; padding: 0; }
@@ -510,6 +514,18 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
 .toast button { border: 0; background: none; color: #9fb1ff; font-weight: 700; padding: 0; }
 
+/* Round + button (bottom right): opens the task panel for a new task */
+.fab {
+  position: fixed; right: 24px; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 25; width: 56px; height: 56px;
+  border: 0; border-radius: 50%; background: var(--fab); color: #fff; display: grid; place-items: center;
+  box-shadow: var(--shadow-lg); transition: transform .15s, filter .15s;
+}
+.fab:hover { transform: scale(1.06); filter: brightness(1.15); }
+.fab:active { transform: scale(.95); }
+.fab svg { width: 28px; height: 28px; fill: currentColor; }
+#saveDlg { width: min(360px, calc(100vw - 32px)); }
+#saveDlg .key { opacity: .65; font-size: 12px; font-weight: 500; margin-left: 4px; }
+
 /* ---------- Small window: thin bar on the left, Inbox below the tasks ---------- */
 @media (max-width: 999px) {
   .app { grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: auto 1fr; height: auto; min-height: 100vh; }
@@ -525,12 +541,12 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   .col-right .group { min-height: 0; }
   .col-right .task { padding: 12px 14px 12px 16px; font-size: 15px; }
   .task .del { opacity: 1; }
-  .sheet { left: 0; right: 0; width: auto; height: 88vh; }
+  .sheet { left: 0; right: 0; width: auto; height: 50dvh; transform: translateY(100%); }
+  .sheet.open { transform: none; }
 }
 @media (max-width: 560px) {
   .col-mid, .col-right { padding-left: 14px; padding-right: 14px; }
   .mid-head h1 { font-size: 28px; }
-  .btn.ai span { display: none; }
 }
 </style>
 </head>
@@ -544,24 +560,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
     <div class="mid-head">
       <h1 id="viewTitle">Tasks</h1>
       <div class="subtitle" id="viewSub"></div>
-      <div class="add-box">
-        <div class="add-row">
-          <span id="plusIcon"></span>
-          <div class="input-wrap">
-            <div class="overlay" id="overlay"></div>
-            <input id="newTask" type="text" autocomplete="off" spellcheck="false" placeholder="Add a task…">
-          </div>
-          <button class="btn ai" id="aiBtn" title="Turn a list into tasks with AI"></button>
-          <button class="btn" id="addBtn">Add</button>
-        </div>
-        <div class="preview" id="preview"></div>
-        <ul class="suggest" id="suggest" hidden></ul>
-      </div>
-      <div class="hint">
-        <code>/nd</code> Inbox · <code>/tmr</code> tomorrow · <code>/15.11</code> <code>/15/11</code> date ·
-        <code>/fri</code> weekday · <code>/dl 20.11</code> deadline · <code>!</code> <code>!!</code> <code>!!!</code> priority ·
-        <code>/c…</code> tag · <code>⌘Z</code> undo · <code>⌘⇧Z</code> redo · right-click a tag to edit it
-      </div>
+      <div class="tag-bar" id="tagBar"></div>
     </div>
     <div id="list"></div>
   </main>
@@ -588,6 +587,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
     </div>
   </div>
   <div class="sheet-body" id="sheetBody"></div>
+  <ul class="suggest" id="suggest" hidden></ul>
 </aside>
 
 <!-- Manage categories -->
@@ -637,6 +637,20 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
     <button class="btn" id="outKeep">Keep tasks</button>
   </div>
 </dialog>
+
+<!-- Closing a new task that was not saved with Enter -->
+<dialog id="saveDlg">
+  <h2>Save this task?</h2>
+  <p class="note" id="saveName"></p>
+  <div class="dlg-actions">
+    <button class="btn ghost" id="saveNo">Discard<span class="key">Esc</span></button>
+    <span class="spacer"></span>
+    <button class="btn" id="saveYes" autofocus>Save<span class="key">Enter</span></button>
+  </div>
+</dialog>
+<button class="fab" id="fab" title="New task (press A twice)" aria-label="New task">
+  <svg viewBox="0 0 24 24"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></svg>
+</button>
 
 <input type="file" id="importFile" accept=".json,application/json" hidden>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" hidden>Undo</button></div>
@@ -824,11 +838,13 @@ const ICON_PATHS = {
   user: '<path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10zM3 21c0-4.4 4-7.5 9-7.5s9 3.1 9 7.5v1H3z"/>',
   copy: '<path d="M8 2h11a2 2 0 0 1 2 2v12h-2V4H8zM3 7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   palette: '<path fill-rule="evenodd" d="M12 2C6.5 2 2 6.2 2 11.5S6.5 22 12 22c1.2 0 2-.8 2-1.9 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3c2.6 0 4.7-2.1 4.7-4.7C22 6 17.5 2 12 2zM6.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>',
+  bell: '<path d="M12 2a6.5 6.5 0 0 1 6.5 6.5v4.2l1.8 3.3H3.7l1.8-3.3V8.5A6.5 6.5 0 0 1 12 2zM9.2 18h5.6a2.8 2.8 0 0 1-5.6 0z"/>',
+  bellOff: '<path d="M12 2a6.5 6.5 0 0 1 6.5 6.5v4.2l1.8 3.3H3.7l1.8-3.3V8.5A6.5 6.5 0 0 1 12 2zM9.2 18h5.6a2.8 2.8 0 0 1-5.6 0z" opacity=".45"/><path d="M3.3 4.7 4.7 3.3l16 16-1.4 1.4z"/>',
 };
 const ICON_COLORS = {
   sun: 'yellow', moon: 'indigo', auto: 'lavender', tag: 'lavender', inbox: 'blue', calendar: 'teal', alarm: 'orange',
   check: 'green', pencil: 'purple', download: 'bluegrey', upload: 'bluegrey', sparkle: 'yellow', plus: '', trash: '', palette: 'lavender',
-  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'lavender',
+  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'lavender', bell: 'yellow', bellOff: 'bluegrey',
 };
 function icon(name, color = ICON_COLORS[name]) {
   const style = color ? ` style="color:var(--i-${color})"` : '';
@@ -888,11 +904,50 @@ function nextTheme() {
   toast('Theme: ' + THEMES[ui.theme][1]);
 }
 
+/* ---------- Sound and haptics when a task is finished ---------- */
+const soundTitle = () => 'Sound: ' + (ui.sound === false ? 'off' : 'on') + ' — click to change';
+function toggleSound() {
+  ui.sound = ui.sound === false;
+  saveUi(); renderLeft();
+  toast('Sound ' + (ui.sound ? 'on' : 'off'));
+  if (ui.sound) playDone();
+}
+// A soft rising "ding-ding", made in the browser (no sound file)
+let audioCtx = null;
+function playDone() {
+  if (ui.sound === false) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t0 = audioCtx.currentTime;
+    [[880, 0], [1318.5, 0.11]].forEach(([freq, at]) => {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t0 + at);
+      gain.gain.exponentialRampToValueAtTime(0.16, t0 + at + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + at + 0.35);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t0 + at); osc.stop(t0 + at + 0.4);
+    });
+  } catch (e) { /* no sound on this device */ }
+}
+// A short tick: Android vibrates, iPhone (iOS 18+) ticks when a hidden switch is toggled. Laptops: nothing.
+function haptic() {
+  try {
+    if (navigator.vibrate) { navigator.vibrate(12); return; }
+    const label = document.createElement('label'), sw = document.createElement('input');
+    sw.type = 'checkbox'; sw.setAttribute('switch', '');
+    label.appendChild(sw); label.style.display = 'none';
+    document.head.appendChild(label); label.click(); label.remove();
+  } catch (e) { /* no haptics on this device */ }
+}
+
 let data = load();
 let ui = loadUi();          // which categories are open, whether "Done" is shown, theme
 let currentDay = todayKey();
 let addingCat = false;      // "+ New category" input is open
 let inlineDay = null;       // day whose "+ Add task" input is open
+let filterTag = null;       // selected tag: only its tasks are shown
 
 /* ---------- Undo / redo ---------- */
 const undoStack = [], redoStack = [];
@@ -974,11 +1029,8 @@ const byDayThenPriority = (a, b) =>
   (a.doDay || '9999').localeCompare(b.doDay || '9999') || b.priority - a.priority || a.createdAt - b.createdAt;
 const byPriority = (a, b) => b.priority - a.priority || a.createdAt - b.createdAt;
 
-// The tag written in the add box is also the filter.
-function activeTag() {
-  const id = parseInput(input.value, data.categories, todayKey()).category;
-  return id && catById(id) ? id : null;
-}
+// The selected tag is also the filter.
+function activeTag() { return filterTag && catById(filterTag) ? filterTag : null; }
 function visibleTasks() {
   const tag = activeTag();
   if (!tag) return data.tasks;
@@ -1016,6 +1068,7 @@ function renderLeft() {
   $('#left').innerHTML = `
     <div class="full">
       <div class="brand">${logo('logoFull')}<b>Mytodo</b>
+        <button class="icon-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
         <button class="icon-btn" data-act="theme" title="Theme: ${themeName} — click to change">${icon(themeIcon)}</button></div>
       <div class="section-title">Categories</div>
       ${tagListHtml()}
@@ -1033,6 +1086,7 @@ function renderLeft() {
       ${logo('logoBar')}
       <button class="bar-btn${popOpen ? ' open' : ''}" data-act="cat-pop" title="Categories">${icon('tag')}</button>
       <button class="bar-btn" data-act="theme" title="Theme: ${themeName}">${icon(themeIcon)}</button>
+      <button class="bar-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
       <button class="bar-btn" data-act="acct-pop" title="${ui.google ? esc(ui.google.email) : 'Sign in with Google'}">${
         ui.google && ui.google.picture ? `<img src="${esc(ui.google.picture)}" alt="" referrerpolicy="no-referrer">` : icon('user')}</button>
       <span class="spacer"></span>
@@ -1063,19 +1117,14 @@ function focusVisible(sel) {
   if (el) el.focus();
 }
 
-// Put "/tag" into the add box, replacing any tag already there.
+// Click a tag to show only its tasks, click it again (or "All") to show all.
 function selectTag(id) {
-  const c = catById(id); if (!c) return;
-  const toks = classifyTokens(input.value, data.categories, todayKey());
-  const keep = toks.filter(x => x.kind !== 'cat').map(x => x.t).join(' ');
-  input.value = (keep ? keep + ' ' : '') + '/' + slug(c.name) + ' ';
-  typedSinceAction = false;
-  if (catChildren(id).length) ui.open[id] = true;
-  if (c.parent) ui.open[c.parent] = true;
+  filterTag = id && id !== filterTag && catById(id) ? id : null;
+  const c = filterTag && catById(filterTag);
+  if (c && catChildren(c.id).length) ui.open[c.id] = true;
+  if (c && c.parent) ui.open[c.parent] = true;
   saveUi();
-  input.focus();
-  input.setSelectionRange(input.value.length, input.value.length);
-  onInputChanged();
+  render();
 }
 
 function addCategory(name, parent = null) {
@@ -1094,6 +1143,7 @@ function onTagAreaClick(e) {
   if (act === 'new-cat') { addingCat = true; renderLeft(); return; }
   if (act === 'cat-pop') { $('#catPop').hidden ? openCatPop(b) : closeCatPop(); return; }
   if (act === 'theme') return nextTheme();
+  if (act === 'sound') return toggleSound();
   if (act === 'done') return doneOpen ? closeSheet() : openDone();
   if (act === 'edit-cats') return openCats();
   if (act === 'export') return exportData();
@@ -1128,11 +1178,12 @@ function onTagAreaBlur(e) {
 document.addEventListener('mousedown', e => {
   if (!$('#catPop').hidden && !e.target.closest('#catPop, [data-act="cat-pop"], #ctx')) closeCatPop();
   if (!$('#acctPop').hidden && !e.target.closest('#acctPop, [data-act="acct-pop"]')) closeAcctPop();
-  if (!$('#ctx').hidden && !e.target.closest('#ctx')) closeCtx();
+  if (!$('#ctx').hidden && !e.target.closest('#ctx') && Date.now() - menuOpenedAt > 600) closeCtx();
 });
 
 /* ---------- Right-click menu on a category ---------- */
 let ctxId = null;
+let menuTask = null, menuOpenedAt = 0;   // the same menu, used for a task
 function openCtx(id, x, y) {
   ctxId = id;
   showCtx('main');
@@ -1159,7 +1210,7 @@ function showCtx(mode) {
       `<button class="swatch${p === c.color ? ' on' : ''}" data-ctx="pick" data-color="${p}" style="--c:${p}" title="${p}"></button>`).join('')}</div>`;
   }
 }
-function closeCtx() { $('#ctx').hidden = true; ctxId = null; }
+function closeCtx() { $('#ctx').hidden = true; ctxId = null; menuTask = null; }
 function saveCtxName() {
   const name = $('#ctxName').value.trim(), id = ctxId;
   if (!name) return;
@@ -1290,28 +1341,15 @@ function renderInbox() {
     group('', inbox, { drop: 'inbox', empty: 'No tasks without a day. Type /nd or drag a task here.' });
 }
 
-function render() { lastTag = activeTag(); renderLeft(); renderMiddle(); renderInbox(); renderOverlay(); if (doneOpen) renderDone(); }
+function render() { renderLeft(); renderTagBar(); renderMiddle(); renderInbox(); if (doneOpen) renderDone(); }
 
 /* ---------- Task actions ---------- */
-const findTask = id => data.tasks.find(t => t.id === id);
+const findTask = id => data.tasks.find(t => t.id === id) || (draft && draft.id === id ? draft : undefined);
 const whereText = t => !t.doDay ? 'Inbox' : dayText(t.doDay);
 const newTask = p => ({ id: uid(), text: p.text, doDay: p.doDay, deadline: p.deadline, priority: p.priority,
                         category: p.category, done: false, createdAt: Date.now(), doneAt: null });
 
-function addFromInput() {
-  const p = parseInput(input.value, data.categories, todayKey());
-  if (!p.text) { toast('Please write a task name'); input.focus(); return; }
-  const t = newTask(p);
-  // Keep the tag in the box so the next task gets it too
-  const c = p.category && catById(p.category);
-  input.value = c ? '/' + slug(c.name) + ' ' : '';
-  typedSinceAction = false;
-  hideSuggest(); updatePreview();
-  change(() => data.tasks.push(t));
-  toast('Added to ' + whereText(t), true);
-}
-
-// "+ Add task" under a day: that day is the default, the tag in the add box is used if none is typed
+// "+ Add task" under a day: that day is the default, the selected tag is used if none is typed
 function addInline(el) {
   const p = parseInput(el.value, data.categories, todayKey(), el.dataset.day);
   if (!p.text) return;
@@ -1349,6 +1387,7 @@ function onListChange(e) {
   }
   if (!e.target.classList.contains('check')) return;
   const li = e.target.closest('.task'), done = e.target.checked;
+  if (done) { playDone(); haptic(); }
   // Let the green tick show, then fade the task out
   li.classList.add('completing');
   setTimeout(() => toggleDone(li.dataset.id, done), 350);
@@ -1386,6 +1425,86 @@ $('#list').addEventListener('focusout', e => {
   }, 150);
 });
 
+/* ---------- Task menu: right-click, or long press on a touch screen ---------- */
+let menuAt = { x: 0, y: 0 };
+function openTaskMenu(id, x, y) {
+  const t = findTask(id); if (!t || t.done) return;
+  ctxId = null; menuTask = id; menuAt = { x, y }; menuOpenedAt = Date.now();
+  showTaskMenu('main');
+  $('#ctx').hidden = false;
+  placeMenu();
+}
+function placeMenu() {
+  const m = $('#ctx');
+  m.style.left = Math.max(10, Math.min(menuAt.x, innerWidth - m.offsetWidth - 10)) + 'px';
+  m.style.top = Math.max(10, Math.min(menuAt.y, innerHeight - m.offsetHeight - 10)) + 'px';
+}
+// Day tasks: Duplicate · Move to Inbox · Delete. Inbox tasks: Duplicate · Add to day · Delete.
+function showTaskMenu(mode) {
+  const t = findTask(menuTask);
+  $('#ctx').innerHTML = mode === 'day'
+    ? `<div class="menu-title">Add to day</div>
+       <button data-tm="today">${icon('calendar')} Today</button>
+       <button data-tm="tomorrow">${icon('calendar')} Tomorrow</button>
+       <div class="menu-title">Pick a date</div>
+       <input type="date" class="menu-date" data-tm="pick" aria-label="Pick a date">`
+    : `<button data-tm="duplicate">${icon('copy')} Duplicate</button>
+       ${t.doDay ? `<button data-tm="inbox">${icon('inbox')} Move to Inbox</button>`
+                 : `<button data-tm="day">${icon('calendar')} Add to day…</button>`}
+       <button data-tm="delete" class="danger">${icon('trash')} Delete</button>`;
+}
+// An exact copy: same title, day, tag, deadline, priority, description and sub-tasks
+function duplicateTask(id) {
+  const t = findTask(id); if (!t) return;
+  const copy = { ...t, id: uid(), createdAt: Date.now() };
+  if (t.subtasks) copy.subtasks = t.subtasks.map(s => ({ ...s, id: uid() }));
+  change(() => data.tasks.splice(data.tasks.indexOf(findTask(id)) + 1, 0, copy));
+  toast('Task duplicated', true);
+}
+$('#ctx').addEventListener('click', e => {
+  const b = e.target.closest('button[data-tm]'); if (!b) return;
+  const id = menuTask, act = b.dataset.tm;
+  if (act === 'day') { showTaskMenu('day'); return placeMenu(); }
+  closeCtx();
+  if (act === 'duplicate') duplicateTask(id);
+  if (act === 'inbox') moveTask(id, 'inbox');
+  if (act === 'today') moveTask(id, 'today');
+  if (act === 'tomorrow') moveTask(id, addDays(todayKey(), 1));
+  if (act === 'delete') deleteTask(id);
+});
+$('#ctx').addEventListener('change', e => {
+  if (e.target.dataset.tm !== 'pick' || !e.target.value) return;
+  const id = menuTask;
+  closeCtx(); moveTask(id, e.target.value);
+});
+
+let pressTimer = null, pressAt = null, lastPointer = 'mouse', suppressClick = false;
+['#list', '#inbox'].forEach(s => {
+  const el = $(s), cancel = () => { clearTimeout(pressTimer); pressTimer = null; };
+  el.addEventListener('contextmenu', e => {
+    const li = e.target.closest('.task'); if (!li) return;
+    e.preventDefault();
+    if (lastPointer === 'mouse') openTaskMenu(li.dataset.id, e.clientX, e.clientY);   // touch: the long press opens it
+  });
+  el.addEventListener('pointerdown', e => {
+    lastPointer = e.pointerType; suppressClick = false;
+    const li = e.target.closest('.task');
+    if (e.pointerType === 'mouse' || !li || e.target.closest('input, button')) return;
+    pressAt = { x: e.clientX, y: e.clientY };
+    cancel();
+    pressTimer = setTimeout(() => {
+      pressTimer = null; suppressClick = true;
+      haptic();
+      openTaskMenu(li.dataset.id, pressAt.x, pressAt.y);
+    }, 500);
+  });
+  el.addEventListener('pointermove', e => { if (pressTimer && Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y) > 10) cancel(); });
+  el.addEventListener('pointerup', cancel);
+  el.addEventListener('pointercancel', cancel);
+  // The tap that ends a long press does not open the task
+  el.addEventListener('click', e => { if (suppressClick) { suppressClick = false; e.stopPropagation(); e.preventDefault(); } }, true);
+});
+
 /* ---------- Drag and drop ---------- */
 let dragId = null;
 document.addEventListener('dragstart', e => {
@@ -1411,25 +1530,7 @@ document.addEventListener('drop', e => {
   moveTask(dragId, zone.dataset.drop);
 });
 
-/* ---------- Add box: highlight, preview, suggestions ---------- */
-const input = $('#newTask'), overlay = $('#overlay'), suggestEl = $('#suggest'), previewEl = $('#preview');
-let suggestions = [], selIndex = 0;
-let typedSinceAction = false;   // decides whether ⌘Z undoes typing or the last action
-
-// Draws the typed text again behind the input, with tags in their colors.
-function renderOverlay() {
-  const kinds = classifyTokens(input.value, data.categories, todayKey());
-  let k = 0;
-  overlay.innerHTML = input.value.split(/(\s+)/).map(part => {
-    if (!part || /^\s+$/.test(part)) return esc(part);
-    const tok = kinds[k++];
-    if (!tok || tok.kind === 'text') return esc(part);
-    if (tok.kind === 'cat') return `<mark style="--c:${catById(tok.value).color}">${esc(part)}</mark>`;
-    return `<mark class="cmd">${esc(part)}</mark>`;
-  }).join('');
-  overlay.scrollLeft = input.scrollLeft;
-}
-
+/* ---------- Tag row above the tasks ---------- */
 function previewChips(p) {
   const chips = [`<span class="chip">${p.doDay ? icon('calendar') + ' ' + dayText(p.doDay) : icon('inbox') + ' Inbox'}</span>`];
   if (p.deadline) chips.push(`<span class="chip warn">${icon('alarm')} Deadline ${fmt(p.deadline)}</span>`);
@@ -1438,13 +1539,51 @@ function previewChips(p) {
   if (c) chips.push(`<span class="chip cat" style="--c:${c.color}"># ${esc(catPath(c.id))}</span>`);
   return chips.join('');
 }
-function updatePreview() {
-  const p = parseInput(input.value, data.categories, todayKey());
-  previewEl.innerHTML = p.text ? previewChips(p) : '';
+
+// "All" and the main tags; the sub-tags of the selected one in a second row. "+" at the end adds a tag.
+let tagAdding = null;   // where the new-tag box is open: 'top', or the main tag that gets a sub-tag
+function renderTagBar() {
+  const tag = activeTag(), sel = tag && catById(tag), top = sel ? (sel.parent || sel.id) : null;
+  const chip = (c, on) => `<button class="tchip${on ? ' on' : ''}" data-filter="${c.id}" style="--c:${c.color}">${esc(c.name)}</button>`;
+  const plus = where => tagAdding === where
+    ? `<input class="tchip-input" data-where="${where}" placeholder="${where === 'top' ? 'New tag' : 'New sub-tag'}" aria-label="New tag name">`
+    : `<button class="tchip add" data-newtag="${where}" title="${where === 'top' ? 'New tag' : 'New sub-tag'}">+</button>`;
+  let h = `<div class="trow${tag ? ' has-sel' : ''}"><button class="tchip all${tag ? '' : ' on'}" data-filter="">All</button>` +
+    data.categories.filter(c => !c.parent).map(c => chip(c, c.id === top)).join('') + plus('top') + '</div>';
+  const kids = top ? catChildren(top) : [];
+  if (kids.length) h += `<div class="trow sub${sel.parent ? ' has-sel' : ''}">${kids.map(c => chip(c, c.id === tag)).join('')}${plus(top)}</div>`;
+  $('#tagBar').innerHTML = h;
+  const inp = $('#tagBar .tchip-input'); if (inp) inp.focus();
 }
+$('#tagBar').addEventListener('click', e => {
+  const add = e.target.closest('[data-newtag]');
+  if (add) { tagAdding = add.dataset.newtag; return renderTagBar(); }
+  const b = e.target.closest('[data-filter]');
+  if (b) selectTag(b.dataset.filter || null);
+});
+$('#tagBar').addEventListener('keydown', e => {
+  if (!e.target.classList.contains('tchip-input')) return;
+  const where = e.target.dataset.where;
+  if (e.key === 'Enter' && !e.isComposing) {
+    e.preventDefault();
+    const name = e.target.value;
+    tagAdding = null;
+    if (!addCategory(name, where === 'top' ? null : where)) { tagAdding = where; renderTagBar(); }
+  }
+  if (e.key === 'Escape') { e.stopPropagation(); tagAdding = null; renderTagBar(); }
+});
+$('#tagBar').addEventListener('focusout', e => {
+  if (!e.target.classList.contains('tchip-input')) return;
+  setTimeout(() => { if (tagAdding && !document.activeElement.classList.contains('tchip-input')) { tagAdding = null; renderTagBar(); } }, 150);
+});
+
+/* ---------- Suggestions while typing "/" in a new task's title ---------- */
+const suggestEl = $('#suggest');
+let suggestions = [], selIndex = 0;
+const titleEl = () => sheetBody.querySelector('.sh-title');
 
 function currentToken() {
-  const v = input.value, pos = input.selectionStart;
+  const el = titleEl(), v = el.value, pos = el.selectionStart;
   const m = v.slice(0, pos).match(/(^|\s)(\/\S*)$/);
   if (!m) return null;
   const after = v.slice(pos).match(/^\S*/)[0];
@@ -1469,7 +1608,7 @@ function buildSuggestions(q) {
 }
 
 function showSuggest() {
-  const tok = currentToken();
+  const tok = isDraft() && titleEl() && currentToken();
   if (!tok || /^dl\S/.test(tok.q)) return hideSuggest();
   suggestions = buildSuggestions(tok.q);
   if (!suggestions.length) return hideSuggest();
@@ -1479,47 +1618,46 @@ function showSuggest() {
        <span class="dot" style="--c:${s.color || 'transparent'}"></span>
        <span class="s-label">${esc(s.label)}</span><span class="s-desc">${esc(s.desc)}</span></li>`).join('');
   suggestEl.hidden = false;
+  // Under the title, or above it when the panel is small (phone keyboard)
+  const sr = sheet.getBoundingClientRect(), tr = titleEl().getBoundingClientRect();
+  const below = sr.bottom - tr.bottom - 12, above = tr.top - 12;
+  const down = below >= 200 || below >= above;
+  suggestEl.style.top = down ? (tr.bottom - sr.top + 6) + 'px' : 'auto';
+  suggestEl.style.bottom = down ? 'auto' : (sr.bottom - tr.top + 6) + 'px';
+  suggestEl.style.maxHeight = Math.min(300, down ? below : above) + 'px';
   const sel = suggestEl.querySelector('.sel'); if (sel) sel.scrollIntoView({ block: 'nearest' });
 }
 function hideSuggest() { suggestEl.hidden = true; suggestions = []; selIndex = 0; }
 
 function pickSuggestion(i) {
-  const s = suggestions[i], tok = currentToken(); if (!s || !tok) return;
-  const v = input.value;
+  const s = suggestions[i], tok = currentToken(), el = titleEl(); if (!s || !tok) return;
+  const v = el.value;
   const ins = s.ins.endsWith(' ') ? s.ins : s.ins + ' ';
-  input.value = v.slice(0, tok.start) + ins + v.slice(tok.end).replace(/^\s+/, '');
+  el.value = v.slice(0, tok.start) + ins + v.slice(tok.end).replace(/^\s+/, '');
   const caret = tok.start + ins.length;
-  input.setSelectionRange(caret, caret);
-  input.focus();
+  el.setSelectionRange(caret, caret);
+  el.focus();
   hideSuggest();
-  onInputChanged();
+  autoGrow(el);
+  readDraftTitle(el.value);
 }
-
-// The tag in the box filters the columns, so redraw them when the text changes.
-let lastTag = null;
-function onInputChanged() {
-  renderOverlay(); updatePreview();
-  if (activeTag() !== lastTag) render();
-}
-
-input.addEventListener('input', () => { typedSinceAction = true; selIndex = 0; showSuggest(); onInputChanged(); });
-input.addEventListener('click', showSuggest);
-input.addEventListener('scroll', () => { overlay.scrollLeft = input.scrollLeft; });
-input.addEventListener('keyup', () => { overlay.scrollLeft = input.scrollLeft; });
-input.addEventListener('blur', () => setTimeout(hideSuggest, 150));
-input.addEventListener('keydown', e => {
-  const open = !suggestEl.hidden;
-  if (open && e.key === 'ArrowDown') { e.preventDefault(); selIndex = (selIndex + 1) % suggestions.length; showSuggest(); }
-  else if (open && e.key === 'ArrowUp') { e.preventDefault(); selIndex = (selIndex - 1 + suggestions.length) % suggestions.length; showSuggest(); }
-  else if (open && (e.key === 'Enter' || e.key === 'Tab')) { e.preventDefault(); pickSuggestion(selIndex); }
-  else if (open && e.key === 'Escape') { hideSuggest(); }
-  else if (e.key === 'Enter') { e.preventDefault(); addFromInput(); }
-});
+$('#sheetBody').addEventListener('focusout', e => { if (e.target.matches('.sh-title')) setTimeout(hideSuggest, 150); });
 suggestEl.addEventListener('mousedown', e => {
   const li = e.target.closest('li'); if (!li) return;
   e.preventDefault(); pickSuggestion(+li.dataset.i);
 });
-$('#addBtn').addEventListener('click', addFromInput);
+
+/* ---------- Round + button (or press A twice): new task in the task panel ---------- */
+$('#fab').addEventListener('click', () => openNewTask());
+// Press A twice quickly (when not typing somewhere) to open it
+let lastA = 0;
+document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() !== 'a' || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  const a = document.activeElement;
+  if (document.querySelector('dialog[open]') || (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable))) return;
+  if (e.timeStamp - lastA < 500) { e.preventDefault(); lastA = 0; openNewTask(); }
+  else lastA = e.timeStamp;
+});
 
 /* ---------- ⌘Z / ⌘⇧Z ---------- */
 document.addEventListener('keydown', e => {
@@ -1527,8 +1665,7 @@ document.addEventListener('keydown', e => {
   if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return;
   if (document.querySelector('dialog[open]')) return;              // normal text undo inside dialogs
   const a = document.activeElement;
-  if (a === input && typedSinceAction && input.value.trim()) return; // undo typing in the add box
-  if (a && a !== input && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.type !== 'checkbox') return;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.type !== 'checkbox') return;
   e.preventDefault();
   e.shiftKey ? redo() : undo();
 });
@@ -1556,8 +1693,11 @@ function flushText() {
   clearTimeout(textTimer);
   const fn = pendingFn;
   pendingKey = pendingFn = null;
-  if (fn) change(fn);
+  if (fn) editing(fn);
 }
+// A new task is not saved until Enter, so its edits skip saving and undo
+const isDraft = () => draft && sheetId === draft.id;
+const editing = fn => isDraft() ? fn() : change(fn);
 
 function openSheet(id) {
   if (!findTask(id)) return;
@@ -1572,6 +1712,12 @@ function openSheet(id) {
 function closeSheet() {
   if (!sheetId && !doneOpen) return;
   flushText();
+  if (isDraft()) {
+    const p = parseInput(draft.text, data.categories, todayKey());
+    if (p.text) return askSaveDraft(p.text);
+    draft = null;
+  }
+  hideSuggest();
   const wasDone = doneOpen;
   sheetId = null; doneOpen = false;
   if (wasDone) renderLeft();
@@ -1580,10 +1726,83 @@ function closeSheet() {
 }
 function refreshSheet() { if (sheetId) findTask(sheetId) ? renderSheet() : closeSheet(); }
 
+/* ---------- New task in the panel (round + button, or A A) ---------- */
+let draft = null;      // the new task being written, saved with Enter
+let draftLast = {};    // shortcuts last read from the title, so a button changed by hand is not overwritten
+let draftMore = false; // phone: "More details" shows description and sub-tasks
+const PHONE = matchMedia('(pointer: coarse)');
+
+function openNewTask() {
+  flushText();
+  draft = { id: uid(), text: '', doDay: todayKey(), deadline: null, priority: 0, category: activeTag(), done: false,
+            description: '', subtasks: [] };
+  draftLast = {}; draftMore = false;
+  openSheet(draft.id);
+  $('[data-sh="more"]').hidden = true;
+  sheetBody.querySelector('.sh-title').focus({ preventScroll: true });   // in the same tap, so the phone keyboard opens
+}
+
+// Turns the draft into a real task
+function commitDraft(d) {
+  const p = parseInput(d.text, data.categories, todayKey());
+  if (!p.text) return null;
+  const t = { ...newTask({ ...d, text: p.text }), id: d.id };
+  if (d.description.trim()) t.description = d.description;
+  if (d.subtasks.length) t.subtasks = d.subtasks;
+  change(() => data.tasks.push(t));
+  toast('Added to ' + whereText(t), true);
+  return t;
+}
+
+// Shortcuts typed in the title (/tmr, /dl 20.11, !!, /tag, /nd) fill the buttons under it
+function readDraftTitle(raw) {
+  draft.text = raw;
+  const now = {};
+  for (const tok of classifyTokens(raw, data.categories, todayKey())) {
+    if (tok.kind === 'date') now.doDay = tok.value;
+    else if (tok.kind === 'nd') now.doDay = null;
+    else if (tok.kind === 'dl') now.deadline = tok.value;
+    else if (tok.kind === 'pri') now.priority = tok.value;
+    else if (tok.kind === 'cat') now.category = tok.value;
+  }
+  let changed = false;
+  for (const k in now) if (now[k] !== draftLast[k]) { draft[k] = now[k]; changed = true; }
+  draftLast = now;
+  if (changed) sheetBody.querySelector('.sh-props').outerHTML = propsHtml(draft);
+}
+
+// Phone: keep the small new-task box right above the keyboard
+function placeSheet() {
+  const vv = window.visualViewport;
+  const kb = vv && sheet.classList.contains('compact') ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
+  sheet.style.bottom = kb ? kb + 'px' : '';
+}
+if (window.visualViewport) ['resize', 'scroll'].forEach(ev => visualViewport.addEventListener(ev, placeSheet));
+
+const saveDlg = $('#saveDlg');
+function askSaveDraft(name) {
+  $('#saveName').textContent = '"' + name + '"';
+  // After the key press that closed the panel, so Esc does not also close this box
+  setTimeout(() => { if (draft && !saveDlg.open) saveDlg.showModal(); });
+}
+function endDraft(keep) {
+  const d = draft;
+  draft = null;
+  if (keep) commitDraft(d);
+  saveDlg.close();
+  closeSheet();
+}
+$('#saveYes').addEventListener('click', () => endDraft(true));
+$('#saveNo').addEventListener('click', () => endDraft(false));
+saveDlg.addEventListener('cancel', e => { e.preventDefault(); endDraft(false); });   // Esc
+// Clicking outside the box goes back to the new task
+saveDlg.addEventListener('close', () => { if (isDraft()) sheetBody.querySelector('.sh-title').focus(); });
+
 /* ---------- Done panel (same sliding panel, lists finished tasks) ---------- */
 function openDone() {
   flushText();
   sheetId = null; doneOpen = true;
+  sheet.classList.remove('compact'); placeSheet();
   $('[data-sh="more"]').hidden = true;
   $('#moreMenu').hidden = true;
   scrim.hidden = false; sheet.hidden = false;
@@ -1617,14 +1836,21 @@ function renderSheet() {
   const ordered = [...subs.filter(s => !s.done), ...subs.filter(s => s.done)];
   const doneN = subs.filter(s => s.done).length;
   const focusNew = document.activeElement && document.activeElement.classList.contains('sub-new');
+  const compact = isDraft() && !draftMore && PHONE.matches;
+  sheet.classList.toggle('compact', compact);
+  placeSheet();
+  hideSuggest();
   sheetBody.innerHTML = `
     <div class="sh-card">
       <div class="sh-title-row">
-        <input type="checkbox" class="check sh-check" ${t.done ? 'checked' : ''} title="Mark as done">
-        <textarea class="sh-title" rows="1" data-f="text" aria-label="Task title">${esc(t.text)}</textarea>
+        <input type="checkbox" class="check sh-check" ${t.done ? 'checked' : ''} title="Mark as done"${isDraft() ? ' style="visibility:hidden"' : ''}>
+        <textarea class="sh-title" rows="1" data-f="text" aria-label="Task title"${isDraft()
+          ? ' placeholder="New task, e.g. Buy milk /tmr !!" enterkeyhint="done"' : ''}>${esc(t.text)}</textarea>
+        ${isDraft() ? `<button class="sh-ai" data-act="ai" title="Turn a list into tasks with AI">${icon('sparkle')}</button>` : ''}
       </div>
       ${propsHtml(t)}
     </div>
+    ${compact ? '<button class="link-btn more-details" data-act="details">More details ⌄</button>' : `
     <div class="sh-section">${icon('notes')} Description</div>
     <textarea class="sh-desc" data-f="description" placeholder="Add notes…">${esc(t.description || '')}</textarea>
     <div class="sh-section">${icon('list')} Sub-tasks
@@ -1635,7 +1861,7 @@ function renderSheet() {
          <input class="sub-text" value="${esc(s.text)}" aria-label="Sub-task">
          <button class="x" title="Delete">×</button></li>`).join('')}
       <li><input class="sub-new" placeholder="+ Add sub-task" autocomplete="off"></li>
-    </ul>`;
+    </ul>`}`;
   sheetBody.querySelectorAll('textarea').forEach(autoGrow);
   if (focusNew) sheetBody.querySelector('.sub-new').focus();
   const pop = sheetBody.querySelector('.prop-pop');
@@ -1675,14 +1901,15 @@ function propPopHtml(t, which) {
 }
 
 // Changes from the panel: save, redraw the lists and the panel
-function sheetChange(fn) { flushText(); change(fn); renderSheet(); }
+function sheetChange(fn) { flushText(); editing(fn); renderSheet(); }
 const sheetTask = () => findTask(sheetId);
 const subById = sid => (sheetTask().subtasks || []).find(s => s.id === sid);
 
 sheetBody.addEventListener('input', e => {
   const el = e.target, id = sheetId;
   if (el.matches('textarea')) autoGrow(el);
-  if (el.dataset.f === 'text') {
+  if (el.dataset.f === 'text' && isDraft()) { readDraftTitle(el.value.replace(/\n/g, ' ')); selIndex = 0; showSuggest(); }
+  else if (el.dataset.f === 'text') {
     const v = el.value.replace(/\n/g, ' ').trim();
     if (v) queueText('text', () => { findTask(id).text = v; });
   } else if (el.dataset.f === 'description') {
@@ -1695,6 +1922,20 @@ sheetBody.addEventListener('input', e => {
 });
 sheetBody.addEventListener('keydown', e => {
   const el = e.target;
+  // The "/" suggestion list under a new task's title
+  if (el.dataset.f === 'text' && !suggestEl.hidden) {
+    const n = suggestions.length;
+    if (e.key === 'ArrowDown') { e.preventDefault(); selIndex = (selIndex + 1) % n; return showSuggest(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); selIndex = (selIndex - 1 + n) % n; return showSuggest(); }
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); return pickSuggestion(selIndex); }
+    if (e.key === 'Escape') { e.stopPropagation(); return hideSuggest(); }
+  }
+  // New task: Enter saves it and starts the next one
+  if (el.dataset.f === 'text' && e.key === 'Enter' && isDraft()) {
+    e.preventDefault();
+    if (e.isComposing || !commitDraft(draft)) return;
+    return openNewTask();
+  }
   if (el.dataset.f === 'text' && e.key === 'Enter') { e.preventDefault(); el.blur(); }
   if (el.classList.contains('sub-text') && e.key === 'Enter') { e.preventDefault(); el.blur(); }
   if (el.classList.contains('sub-new') && e.key === 'Enter') {
@@ -1710,6 +1951,7 @@ sheetBody.addEventListener('change', e => {
   const el = e.target, f = el.dataset.pick;
   if (f) { propOpen = null; return sheetChange(() => { sheetTask()[f] = el.value || null; }); }
   if (el.classList.contains('sh-check')) {
+    if (el.checked) { playDone(); haptic(); }
     flushText(); toggleDone(sheetId, el.checked); return renderSheet();
   }
   if (el.matches('.sub .check')) {
@@ -1719,7 +1961,11 @@ sheetBody.addEventListener('change', e => {
 });
 sheetBody.addEventListener('click', e => {
   if (doneOpen) return onListClick(e);
+  if (e.target.matches('.sh-title') && isDraft()) return showSuggest();
   const b = e.target.closest('button'); if (!b) return;
+  // New task: ✨ moves the typed text to the AI box, "More details" shows the rest of the panel
+  if (b.dataset.act === 'ai') { const text = draft.text.trim(); draft = null; closeSheet(); return openAi(text); }
+  if (b.dataset.act === 'details') { draftMore = true; return renderSheet(); }
   if (b.dataset.prop) { propOpen = propOpen === b.dataset.prop ? null : b.dataset.prop; return renderSheet(); }
   if (b.dataset.set) {
     const f = b.dataset.set, v = f === 'priority' ? +b.dataset.v : (b.dataset.v || null);
@@ -1883,10 +2129,10 @@ function parseAiAnswer() {
   if (!aiTasks.length && $('#aiAnswer').value.trim()) toast('No tasks found in this answer');
 }
 
-$('#aiBtn').addEventListener('click', () => {
-  if (input.value.trim()) $('#aiList').value = input.value.trim();
+function openAi(text) {
+  if (text) $('#aiList').value = text;
   aiDlg.showModal(); $('#aiList').focus();
-});
+}
 $('#aiCopy').addEventListener('click', async () => {
   const list = $('#aiList').value.trim();
   if (!list) { toast('Please write your list first'); $('#aiList').focus(); return; }
@@ -2248,15 +2494,12 @@ setInterval(() => document.querySelectorAll('.acct-status').forEach(el => { el.i
 
 /* ---------- Start ---------- */
 if (ui.google) gState = 'paused';   // after opening, the first click reconnects to Google
-$('#plusIcon').outerHTML = icon('plus');
-$('#aiBtn').innerHTML = icon('sparkle') + '<span>AI</span>';
 $('#aiTitle').insertAdjacentHTML('afterbegin', icon('sparkle'));
 $('#mDup').innerHTML = icon('copy') + ' Duplicate';
 $('#mInbox').innerHTML = icon('inbox') + ' Move to Inbox';
 $('#mDel').innerHTML = icon('trash') + ' Delete';
 applyTheme();
 render();
-input.focus();
 // Refresh when the date changes (e.g. after midnight)
 setInterval(() => { if (todayKey() !== currentDay) { currentDay = todayKey(); render(); } }, 60000);
 </script>
