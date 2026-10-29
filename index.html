@@ -96,7 +96,7 @@ button { cursor: pointer; }
 .tag-row.child { padding-left: 18px; }
 .tag {
   flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 9px;
-  padding: 6px 10px; background: transparent; text-align: left; font-size: 15px; transition: background .15s;
+  padding: 6px 10px; background: transparent; text-align: left; font-size: 15px; line-height: 22px; transition: background .15s;
 }
 .tag:hover { background: var(--hover); }
 .tag .sw { width: 12px; height: 12px; border-radius: 4px; background: var(--c); flex: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
@@ -160,11 +160,13 @@ button { cursor: pointer; }
 .mid-head h1 { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
 .subtitle { color: var(--muted); margin: 4px 0 16px; font-size: 16px; }
 /* Tag row above the tasks: tap one to show only its tasks */
+/* Own drawing layer: other animations (panel, message) do not make the tags shake */
+#tagBar, #left .full { will-change: transform; }
 .trow { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
 .trow::-webkit-scrollbar { display: none; }
 .trow.sub { margin-top: 6px; }
 .tchip {
-  flex: none; border: 0; border-radius: 6px; padding: 3px 10px; font-size: 14px; font-weight: 500; white-space: nowrap;
+  flex: none; border: 0; border-radius: 6px; padding: 3px 10px; font-size: 14px; line-height: 21px; font-weight: 500; white-space: nowrap;
   background: var(--c); color: var(--tag-text); color: hsl(from var(--c) h s 30%); transition: opacity .2s;
 }
 .tchip.all { --c: var(--hover); color: var(--text); }
@@ -242,12 +244,16 @@ button { cursor: pointer; }
 .task.done .title { text-decoration: line-through; color: var(--done); }
 .task .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .task .meta:empty { display: none; }
-.task .del {
+.task .del, .task .more {
   border: 0; background: none; color: var(--muted); font-size: 17px; line-height: 1; width: 26px; height: 26px;
   border-radius: 8px; opacity: 0; transition: opacity .15s, background .15s; flex: none;
 }
-.task:hover .del { opacity: 1; }
+.task:hover .del, .task:hover .more { opacity: 1; }
 .task .del:hover { color: var(--danger); background: var(--danger-soft); }
+.task .more { letter-spacing: 1px; font-weight: 700; }
+.task .more:hover { color: var(--text); background: var(--hover); }
+/* Touch screens: hold a task to drag it */
+.drag-ghost { position: fixed; z-index: 60; margin: 0; pointer-events: none; box-shadow: var(--shadow-lg); transform: scale(1.03) rotate(1deg); opacity: .95; }
 .empty { color: var(--muted); padding: 2px 4px 2px 2px; font-size: 13.5px; opacity: .8; list-style: none; }
 
 /* "+ Add task" line under each day */
@@ -357,6 +363,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .sheet.compact { height: auto; min-height: 0; max-height: 50dvh; }
 .sheet.compact .sheet-body { padding-bottom: 14px; }
 .more-details { margin: -12px 0 0 4px; }
+.sh-added { color: var(--done); font-size: 13px; font-weight: 600; margin: -4px 0 8px 34px; }
 .sh-ai { flex: none; border: 0; border-radius: 10px; width: 34px; height: 34px; display: grid; place-items: center; background: var(--accent-soft); }
 .sheet-handle { width: 44px; height: 5px; border-radius: 9px; background: var(--line); margin: 10px auto 0; flex: none; }
 .sheet-top { display: flex; align-items: center; justify-content: space-between; padding: 4px 14px 0; position: relative; flex: none; }
@@ -540,7 +547,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   .col-right .head { margin-left: 2px; }
   .col-right .group { min-height: 0; }
   .col-right .task { padding: 12px 14px 12px 16px; font-size: 15px; }
-  .task .del { opacity: 1; }
+  .task .del, .task .more { opacity: 1; }
   .sheet { left: 0; right: 0; width: auto; height: 50dvh; transform: translateY(100%); }
   .sheet.open { transform: none; }
 }
@@ -948,6 +955,7 @@ let currentDay = todayKey();
 let addingCat = false;      // "+ New category" input is open
 let inlineDay = null;       // day whose "+ Add task" input is open
 let filterTag = null;       // selected tag: only its tasks are shown
+const TOUCH = matchMedia('(pointer: coarse)');   // phone or iPad
 
 /* ---------- Undo / redo ---------- */
 const undoStack = [], redoStack = [];
@@ -1280,10 +1288,11 @@ function taskHtml(t, o = {}) {
     const n = daysBetween(t.doDay, T);
     late = `<div class="late">${DAY_LABELS[fromKey(t.doDay).getDay()]} ${fmt(t.doDay)} · ${n} day${n > 1 ? 's' : ''} ago</div>`;
   }
-  let h = `<li class="task${t.priority ? ' pr' + t.priority : ''}${t.done ? ' done' : ''}${overdue ? ' is-overdue' : ''}" data-id="${t.id}" draggable="${!t.done}">
+  let h = `<li class="task${t.priority ? ' pr' + t.priority : ''}${t.done ? ' done' : ''}${overdue ? ' is-overdue' : ''}" data-id="${t.id}" draggable="${!t.done && !TOUCH.matches}">
       ${subs.length ? `<span class="ring" style="--p:${pct}">${check}</span>` : check}
       <div class="body"><div class="title">${esc(t.text)}</div>${late}<div class="meta">${taskChips(t, o.showDay)}</div></div>
       ${subs.length ? `<button class="tog-sub${open ? ' open' : ''}" title="${open ? 'Hide' : 'Show'} sub-tasks">›</button>` : ''}
+      ${t.done ? '' : '<button class="more" title="More: duplicate, move, delete">···</button>'}
       <button class="del" title="Delete">×</button></li>`;
   if (open) {
     const ordered = [...subs.filter(s => !s.done), ...subs.filter(s => s.done)];
@@ -1309,7 +1318,7 @@ function group(title, tasks, o = {}) {
   if (o.addDay) items += addLineHtml(o.addDay, !tasks.length);
   else if (!tasks.length) items = `<li class="empty">${o.empty || 'No tasks'}</li>`;
   return `<section class="group${o.cls ? ' ' + o.cls : ''}"${o.drop ? ` data-drop="${o.drop}"` : ''}>
-    ${title ? `<h3>${title} <span class="count">${tasks.length}</span></h3>` : ''}
+    ${title ? `<h3>${title}${o.pending ? ` <span class="count">${tasks.length}</span>` : ''}</h3>` : ''}
     <ul class="tasks">${items}</ul>
   </section>`;
 }
@@ -1337,7 +1346,7 @@ function renderMiddle() {
 
 function renderInbox() {
   const inbox = visibleTasks().filter(t => !t.done && !t.doDay).sort(byPriority);
-  $('#inbox').innerHTML = `<div class="head">${icon('inbox')}<b>Inbox</b><span class="sub-note">(no date)</span>${inbox.length ? `<span class="count">${inbox.length}</span>` : ''}</div>` +
+  $('#inbox').innerHTML = `<div class="head">${icon('inbox')}<b>Inbox</b><span class="sub-note">(no date)</span></div>` +
     group('', inbox, { drop: 'inbox', empty: 'No tasks without a day. Type /nd or drag a task here.' });
 }
 
@@ -1398,6 +1407,8 @@ function onListClick(e) {
   const li = e.target.closest('.task'); if (!li) return;
   if (e.target.closest('.tog-sub')) { ui.subOpen[li.dataset.id] = !ui.subOpen[li.dataset.id]; saveUi(); renderMiddle(); renderInbox(); return; }
   if (e.target.closest('.del')) return deleteTask(li.dataset.id);
+  const more = e.target.closest('.more');
+  if (more) { const r = more.getBoundingClientRect(); return openTaskMenu(li.dataset.id, r.right - 210, r.bottom + 4); }
   if (e.target.closest('.body')) openSheet(li.dataset.id);
 }
 ['#list', '#inbox'].forEach(s => {
@@ -1478,32 +1489,83 @@ $('#ctx').addEventListener('change', e => {
   closeCtx(); moveTask(id, e.target.value);
 });
 
-let pressTimer = null, pressAt = null, lastPointer = 'mouse', suppressClick = false;
+let lastPointer = 'mouse', suppressClick = false;
 ['#list', '#inbox'].forEach(s => {
-  const el = $(s), cancel = () => { clearTimeout(pressTimer); pressTimer = null; };
+  const el = $(s);
+  // Right-click opens the menu (touch screens use the "···" button)
   el.addEventListener('contextmenu', e => {
     const li = e.target.closest('.task'); if (!li) return;
     e.preventDefault();
-    if (lastPointer === 'mouse') openTaskMenu(li.dataset.id, e.clientX, e.clientY);   // touch: the long press opens it
+    if (lastPointer === 'mouse') openTaskMenu(li.dataset.id, e.clientX, e.clientY);
   });
-  el.addEventListener('pointerdown', e => {
-    lastPointer = e.pointerType; suppressClick = false;
-    const li = e.target.closest('.task');
-    if (e.pointerType === 'mouse' || !li || e.target.closest('input, button')) return;
-    pressAt = { x: e.clientX, y: e.clientY };
-    cancel();
-    pressTimer = setTimeout(() => {
-      pressTimer = null; suppressClick = true;
-      haptic();
-      openTaskMenu(li.dataset.id, pressAt.x, pressAt.y);
-    }, 500);
-  });
-  el.addEventListener('pointermove', e => { if (pressTimer && Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y) > 10) cancel(); });
-  el.addEventListener('pointerup', cancel);
-  el.addEventListener('pointercancel', cancel);
-  // The tap that ends a long press does not open the task
+  el.addEventListener('pointerdown', e => { lastPointer = e.pointerType; suppressClick = false; });
+  // The tap that ends a drag does not open the task
   el.addEventListener('click', e => { if (suppressClick) { suppressClick = false; e.stopPropagation(); e.preventDefault(); } }, true);
 });
+
+/* ---------- Touch screens: hold a task, then drag it to another day or the Inbox ---------- */
+let hold = null;   // { id, li, x, y, timer, ghost, dx, dy, zone }
+function endHold(drop) {
+  if (!hold) return;
+  clearTimeout(hold.timer);
+  const h = hold;
+  hold = null;
+  if (!h.ghost) return;
+  h.ghost.remove();
+  document.querySelectorAll('.dragging, .drag-over').forEach(x => x.classList.remove('dragging', 'drag-over'));
+  if (drop && h.zone) moveTask(h.id, h.zone.dataset.drop);
+}
+function startDrag() {
+  const r = hold.li.getBoundingClientRect();
+  hold.dx = hold.x - r.left; hold.dy = hold.y - r.top;
+  hold.ghost = hold.li.cloneNode(true);
+  hold.ghost.classList.add('drag-ghost');
+  Object.assign(hold.ghost.style, { width: r.width + 'px', left: r.left + 'px', top: r.top + 'px' });
+  document.body.appendChild(hold.ghost);
+  hold.li.classList.add('dragging');
+  suppressClick = true;
+  haptic();
+  autoScroll();
+}
+// Near the top or bottom of the screen, scroll while dragging
+function autoScroll() {
+  if (!hold || !hold.ghost) return;
+  const d = hold.y < 90 ? -10 : hold.y > innerHeight - 90 ? 10 : 0;
+  if (d) {
+    const col = hold.li.closest('.col');
+    if (col && col.scrollHeight > col.clientHeight && getComputedStyle(col).overflowY !== 'visible') col.scrollTop += d;
+    else scrollBy(0, d);
+  }
+  requestAnimationFrame(autoScroll);
+}
+document.addEventListener('touchstart', e => {
+  const li = e.target.closest && e.target.closest('#list .task, #inbox .task');
+  if (e.touches.length !== 1 || !li || li.classList.contains('done') || e.target.closest('input, button')) return;
+  const t = e.touches[0];
+  hold = { id: li.dataset.id, li, x: t.clientX, y: t.clientY };
+  hold.timer = setTimeout(startDrag, 450);
+}, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (!hold) return;
+  const t = e.touches[0];
+  if (!hold.ghost) {   // moved before the hold time: the finger is scrolling
+    if (Math.hypot(t.clientX - hold.x, t.clientY - hold.y) > 10) endHold(false);
+    return;
+  }
+  e.preventDefault();  // no page scrolling while dragging
+  hold.x = t.clientX; hold.y = t.clientY;
+  hold.ghost.style.left = (hold.x - hold.dx) + 'px';
+  hold.ghost.style.top = (hold.y - hold.dy) + 'px';
+  const under = document.elementFromPoint(hold.x, hold.y);
+  const zone = under && under.closest('[data-drop]');
+  if (zone !== hold.zone) {
+    if (hold.zone) hold.zone.classList.remove('drag-over');
+    if (zone) zone.classList.add('drag-over');
+    hold.zone = zone;
+  }
+}, { passive: false });
+document.addEventListener('touchend', () => endHold(true));
+document.addEventListener('touchcancel', () => endHold(false));
 
 /* ---------- Drag and drop ---------- */
 let dragId = null;
@@ -1553,6 +1615,8 @@ function renderTagBar() {
   const kids = top ? catChildren(top) : [];
   if (kids.length) h += `<div class="trow sub${sel.parent ? ' has-sel' : ''}">${kids.map(c => chip(c, c.id === tag)).join('')}${plus(top)}</div>`;
   $('#tagBar').innerHTML = h;
+  // Whole-pixel widths, so no tag sits half a pixel off
+  document.querySelectorAll('#tagBar .tchip').forEach(b => { b.style.width = Math.ceil(b.getBoundingClientRect().width) + 'px'; });
   const inp = $('#tagBar .tchip-input'); if (inp) inp.focus();
 }
 $('#tagBar').addEventListener('click', e => {
@@ -1730,10 +1794,11 @@ function refreshSheet() { if (sheetId) findTask(sheetId) ? renderSheet() : close
 let draft = null;      // the new task being written, saved with Enter
 let draftLast = {};    // shortcuts last read from the title, so a button changed by hand is not overwritten
 let draftMore = false; // phone: "More details" shows description and sub-tasks
-const PHONE = matchMedia('(pointer: coarse)');
+let draftNote = '';    // "✓ Added to …" under the title after Enter, so you see it was saved
 
-function openNewTask() {
+function openNewTask(note = '') {
   flushText();
+  draftNote = note;
   draft = { id: uid(), text: '', doDay: todayKey(), deadline: null, priority: 0, category: activeTag(), done: false,
             description: '', subtasks: [] };
   draftLast = {}; draftMore = false;
@@ -1757,6 +1822,7 @@ function commitDraft(d) {
 // Shortcuts typed in the title (/tmr, /dl 20.11, !!, /tag, /nd) fill the buttons under it
 function readDraftTitle(raw) {
   draft.text = raw;
+  if (draftNote) { draftNote = ''; const n = sheetBody.querySelector('.sh-added'); if (n) n.remove(); }
   const now = {};
   for (const tok of classifyTokens(raw, data.categories, todayKey())) {
     if (tok.kind === 'date') now.doDay = tok.value;
@@ -1836,7 +1902,7 @@ function renderSheet() {
   const ordered = [...subs.filter(s => !s.done), ...subs.filter(s => s.done)];
   const doneN = subs.filter(s => s.done).length;
   const focusNew = document.activeElement && document.activeElement.classList.contains('sub-new');
-  const compact = isDraft() && !draftMore && PHONE.matches;
+  const compact = isDraft() && !draftMore && TOUCH.matches;
   sheet.classList.toggle('compact', compact);
   placeSheet();
   hideSuggest();
@@ -1848,6 +1914,7 @@ function renderSheet() {
           ? ' placeholder="New task, e.g. Buy milk /tmr !!" enterkeyhint="done"' : ''}>${esc(t.text)}</textarea>
         ${isDraft() ? `<button class="sh-ai" data-act="ai" title="Turn a list into tasks with AI">${icon('sparkle')}</button>` : ''}
       </div>
+      ${isDraft() && draftNote ? `<div class="sh-added">${esc(draftNote)}</div>` : ''}
       ${propsHtml(t)}
     </div>
     ${compact ? '<button class="link-btn more-details" data-act="details">More details ⌄</button>' : `
@@ -1933,8 +2000,9 @@ sheetBody.addEventListener('keydown', e => {
   // New task: Enter saves it and starts the next one
   if (el.dataset.f === 'text' && e.key === 'Enter' && isDraft()) {
     e.preventDefault();
-    if (e.isComposing || !commitDraft(draft)) return;
-    return openNewTask();
+    const t = !e.isComposing && commitDraft(draft);
+    if (!t) return;
+    return openNewTask('✓ Added to ' + whereText(t));
   }
   if (el.dataset.f === 'text' && e.key === 'Enter') { e.preventDefault(); el.blur(); }
   if (el.classList.contains('sub-text') && e.key === 'Enter') { e.preventDefault(); el.blur(); }
