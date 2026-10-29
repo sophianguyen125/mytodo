@@ -219,6 +219,7 @@ button { cursor: pointer; }
   background: var(--c); color: var(--tag-text); color: hsl(from var(--c) h s 30%); transition: opacity .2s;
 }
 .tchip.all { --c: var(--hover); color: var(--text); }
+.tchip { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }   /* long press opens the tag menu */
 .trow.has-sel .tchip:not(.on) { opacity: .4; }
 .trow.has-sel .tchip:not(.on):hover { opacity: .75; }
 .trow .tchip.add { --c: transparent; color: var(--muted); padding: 3px 8px; opacity: 1 !important; }
@@ -1108,6 +1109,14 @@ function themeChoicesHtml() {
       `<button class="me-row${color === k ? ' on' : ''}" data-act="set-color" data-v="${k}">
          <span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span>${name}${color === k ? '<b>✓</b>' : ''}</button>`).join('');
 }
+// Me screen: the theme is one line ("●●● Classic · Dark"); tap it to open or close the choices
+let themeOpen = false;
+function themeSummaryHtml() {
+  const mode = THEMES[ui.theme] ? ui.theme : 'auto', [name, dots] = COLORS[ui.color] || COLORS.classic;
+  return `<button class="me-row" data-act="theme-toggle" aria-expanded="${themeOpen}">
+    <span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span>${name} · ${mode[0].toUpperCase() + mode.slice(1)}
+    <b>${themeOpen ? '⌃' : '›'}</b></button>`;
+}
 function openThemePop(btn) {
   const pop = $('#themePop'), r = btn.getBoundingClientRect();
   pop.innerHTML = themeChoicesHtml(); pop.hidden = false;
@@ -1410,6 +1419,7 @@ function onTagAreaClick(e) {
   if (act === 'new-cat') { addingCat = true; renderLeft(); return; }
   if (act === 'cat-pop') { $('#catPop').hidden ? openCatPop(b) : closeCatPop(); return; }
   if (act === 'theme') return $('#themePop').hidden ? openThemePop(b) : closeThemePop();
+  if (act === 'theme-toggle') { themeOpen = !themeOpen; return renderMe(); }
   if (act === 'set-theme' || act === 'set-color') {
     ui[act === 'set-theme' ? 'theme' : 'color'] = b.dataset.v;
     saveUi(); applyTheme(); renderLeft();
@@ -1459,7 +1469,7 @@ document.addEventListener('mousedown', e => {
 let ctxId = null;
 let menuTask = null, menuOpenedAt = 0;   // the same menu, used for a task
 function openCtx(id, x, y) {
-  ctxId = id;
+  ctxId = id; menuTask = null; menuOpenedAt = Date.now();
   showCtx('main');
   const m = $('#ctx');
   m.hidden = false;
@@ -1981,6 +1991,26 @@ $('#tagBar').addEventListener('click', e => {
   const b = e.target.closest('[data-filter]');
   if (b) selectTag(b.dataset.filter || null);
 });
+// Right-click (laptop) or long press (phone) on a tag: Edit name · Change colour · Delete
+$('#tagBar').addEventListener('contextmenu', e => {
+  const b = e.target.closest('.tchip[data-filter]'); if (!b || !b.dataset.filter) return;
+  e.preventDefault();
+  if (lastPointer === 'mouse') openCtx(b.dataset.filter, e.clientX, e.clientY);   // touch: the long press below
+});
+let tagPress = null, tagPressed = false;
+$('#tagBar').addEventListener('touchstart', e => {
+  const b = e.target.closest('.tchip[data-filter]'); tagPressed = false;
+  if (!b || !b.dataset.filter || e.touches.length !== 1) return;
+  const t = e.touches[0];
+  tagPress = { x: t.clientX, y: t.clientY, timer: setTimeout(() => { tagPressed = true; openCtx(b.dataset.filter, tagPress.x, tagPress.y); }, 500) };
+}, { passive: true });
+$('#tagBar').addEventListener('touchmove', e => {
+  if (tagPress && Math.hypot(e.touches[0].clientX - tagPress.x, e.touches[0].clientY - tagPress.y) > 10) { clearTimeout(tagPress.timer); tagPress = null; }
+}, { passive: true });
+$('#tagBar').addEventListener('touchend', () => { if (tagPress) clearTimeout(tagPress.timer); tagPress = null; });
+// The tap that ends a long press does not also select the tag
+$('#tagBar').addEventListener('click', e => { if (tagPressed) { tagPressed = false; e.stopPropagation(); e.preventDefault(); } }, true);
+$('#tagBar').addEventListener('pointerdown', e => { lastPointer = e.pointerType; });
 $('#tagBar').addEventListener('keydown', e => {
   if (!e.target.classList.contains('tchip-input')) return;
   const where = e.target.dataset.where;
@@ -3062,7 +3092,7 @@ function renderMe() {
   $('#meScreen').innerHTML = `<h1 class="screen-title">Me</h1>
     <div class="me-card">${accountHtml()}</div>
     <div class="me-section">Theme</div>
-    <div class="me-card">${themeChoicesHtml()}</div>
+    <div class="me-card">${themeSummaryHtml()}${themeOpen ? themeChoicesHtml() : ''}</div>
     <div class="me-section">Sound</div>
     <div class="me-card"><button class="me-row" data-act="sound">${icon(ui.sound === false ? 'bellOff' : 'bell')} Sound when a task is done <b>${ui.sound === false ? 'Off' : 'On'}</b></button></div>
     <div class="me-section">Categories</div>
