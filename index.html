@@ -21,52 +21,61 @@
 :root {
   color-scheme: light;
   --bg: #f7f6f3; --panel: #ffffff; --side: #f1efeb; --text: #23262d; --muted: #80858f;
-  --line: #e7e4de; --hover: #eae8e3; --accent: #4f6ef7; --accent-soft: #e9edfe;
-  --danger: #e04848; --danger-soft: #fdecec; --warn: #c27a10; --warn-soft: #fdf3e1;
-  --done: #2fa66a; --done-soft: #e5f4eb;
+  --line: #e7e4de; --hover: #eae8e3; --accent: #558E9B; --accent-soft: #e2eef0;
+  --danger: #C96349; --danger-soft: #f8e6e1; --warn: #b9862e; --warn-soft: #fbf1dc;
+  --done: #6f9a79; --done-soft: #e6efe8;
   --p1: #5b8def; --p2: #f0a030; --p3: #e5484d;
   --shadow-sm: 0 1px 2px rgba(30, 30, 40, .05), 0 1px 4px rgba(30, 30, 40, .04);
   --shadow-md: 0 6px 18px rgba(30, 30, 40, .09);
   --shadow-lg: 0 16px 44px rgba(30, 30, 40, .18);
   --tag-text: #23262d;
-  --fab: #1f2d5c;
+  --fab: #558E9B;
   /* icon colors */
-  --i-yellow: #f3c55a; --i-indigo: #a3a6f0; --i-lavender: #b9a8f3; --i-blue: #8fb8f2; --i-teal: #7fd1c6;
-  --i-orange: #f4ad86; --i-green: #8fd3a8; --i-purple: #c9a2ee; --i-bluegrey: #a9b6c6; --i-pink: #f2a7c3;
+  /* from the palette: Buttercup, Horizon, Dusty Lavender, Neptune, Atomic Tangerine, Spanish Green, Rose, Tumbleweed, Terracotta */
+  --i-yellow: #E7C878; --i-indigo: #558E9B; --i-lavender: #A386A9; --i-blue: #7BB2BA; --i-teal: #558E9B;
+  --i-orange: #F79E70; --i-green: #84A48B; --i-purple: #E89B88; --i-bluegrey: #D1A996; --i-pink: #E89B88; --i-terracotta: #C96349;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #1b1d22; --panel: #24272e; --side: #202227; --text: #e8e9ec; --muted: #949aa5;
-    --line: #31343c; --hover: #2d3038; --accent: #7d93ff; --accent-soft: #2b3150;
-    --danger: #ff6b6b; --danger-soft: #3b2427; --warn: #f0aa45; --warn-soft: #3a301e;
-    --done: #5ccf8f; --done-soft: #1f3329;
-    --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b; --fab: #34478f;
+    --line: #31343c; --hover: #2d3038; --accent: #7BB2BA; --accent-soft: #22363b;
+    --danger: #E08A72; --danger-soft: #3b2824; --warn: #E7C878; --warn-soft: #3a321e;
+    --done: #9cc0a5; --done-soft: #23332a;
+    --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b; --fab: #3f6f79;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3); --shadow-md: 0 6px 18px rgba(0, 0, 0, .35); --shadow-lg: 0 16px 44px rgba(0, 0, 0, .55);
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #1b1d22; --panel: #24272e; --side: #202227; --text: #e8e9ec; --muted: #949aa5;
-  --line: #31343c; --hover: #2d3038; --accent: #7d93ff; --accent-soft: #2b3150;
-  --danger: #ff6b6b; --danger-soft: #3b2427; --warn: #f0aa45; --warn-soft: #3a301e;
-  --done: #5ccf8f; --done-soft: #1f3329;
-  --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b; --fab: #34478f;
+  --line: #31343c; --hover: #2d3038; --accent: #7BB2BA; --accent-soft: #22363b;
+  --danger: #E08A72; --danger-soft: #3b2824; --warn: #E7C878; --warn-soft: #3a321e;
+  --done: #9cc0a5; --done-soft: #23332a;
+  --p1: #7aa5ff; --p2: #f0aa45; --p3: #ff6b6b; --fab: #3f6f79;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .3); --shadow-md: 0 6px 18px rgba(0, 0, 0, .35); --shadow-lg: 0 16px 44px rgba(0, 0, 0, .55);
 }
 /* ---------- Colour themes (each with light and dark; Classic is the colours above). Tag colours never change. ---------- */
 :root[data-color="focus"]   { --bg: #f2f5f9; --panel: #ffffff; --side: #e9eef5; --line: #dbe2ec; --hover: #e4e9f1; --text: #0f1b2d; --muted: #5b6b80; --accent: #1e3a8a; --accent-soft: #dbe4f7; --fab: #0f1b2d; --done: #1f8a5b; }
 :root[data-color="cozy"]    { --bg: #f8f1e5; --panel: #fffaf2; --side: #f0e5d3; --line: #e6d7bf; --hover: #efe2cd; --text: #3b2a1e; --muted: #8a735e; --accent: #a0612b; --accent-soft: #f3e0c8; --fab: #5a3a22; --done: #6b9a5b; }
 :root[data-color="playful"] { --bg: #fff5f9; --panel: #ffffff; --side: #fdeef5; --line: #f5d9e7; --hover: #fbe6f0; --text: #3a2340; --muted: #9a7aa0; --accent: #e0569a; --accent-soft: #fde1ef; --fab: #c23d7f; --done: #34b98a; }
+:root[data-color="focus"]   { --i-yellow: #8FB3D9; --i-indigo: #3E5F8A; --i-lavender: #7D8FC4; --i-blue: #5B8FC7; --i-teal: #4C7FA6; --i-orange: #6FA0C9; --i-green: #5E9AA8; --i-purple: #8A9DD6; --i-bluegrey: #9AAEC4; --i-pink: #7EA6D8; --i-terracotta: #3E5F8A; }
+:root[data-color="cozy"]    { --i-yellow: #D9A55B; --i-indigo: #8A5A3B; --i-lavender: #B98B6E; --i-blue: #A97C5A; --i-teal: #8F6B4A; --i-orange: #D07B4A; --i-green: #9A8A5A; --i-purple: #C4876A; --i-bluegrey: #B8A08A; --i-pink: #D4937A; --i-terracotta: #A0522D; }
+:root[data-color="playful"] { --i-yellow: #F6C96A; --i-indigo: #E07AAE; --i-lavender: #C99AE0; --i-blue: #7ECFC0; --i-teal: #5FC4B0; --i-orange: #F59AA8; --i-green: #6FD1A6; --i-purple: #E58FC0; --i-bluegrey: #B9A6C9; --i-pink: #F28AB7; --i-terracotta: #E0569A; }
+:root[data-color="calm"]    { --i-yellow: #C9C27A; --i-indigo: #5E8A6E; --i-lavender: #9AAE8F; --i-blue: #7FA99A; --i-teal: #6A9A84; --i-orange: #B9A06A; --i-green: #6E9F7A; --i-purple: #A3B58E; --i-bluegrey: #A7B5A8; --i-pink: #B9AE8A; --i-terracotta: #6E8A5A; }
+/* icon colours per theme (Classic uses the palette above; Simple uses grey outlines) */
+:root[data-color="simple"]  { --bg: #fafafa; --panel: #ffffff; --side: #f3f3f3; --line: #e4e4e4; --hover: #ececec; --text: #1a1a1a; --muted: #737373; --accent: #3f4f66; --accent-soft: #e6e9ee; --fab: #1a1a1a; --done: #4f7a5f; }
 :root[data-color="calm"]    { --bg: #f2f5ef; --panel: #fbfcf9; --side: #e8ede3; --line: #dbe2d3; --hover: #e4eadd; --text: #26302a; --muted: #6f7d72; --accent: #4f7d5f; --accent-soft: #dfeae2; --fab: #2f4a3a; --done: #5b9a6e; }
 @media (prefers-color-scheme: dark) {
   :root[data-color="focus"]:not([data-theme="light"])   { --bg: #0c1320; --panel: #141e2f; --side: #101827; --line: #23314a; --hover: #1b283f; --text: #e6edf7; --muted: #8a9ab3; --accent: #6b8cff; --accent-soft: #1c2a4c; --fab: #2a4590; --done: #4cc38a; }
   :root[data-color="cozy"]:not([data-theme="light"])    { --bg: #1f1813; --panel: #2a211a; --side: #241c16; --line: #3a2e24; --hover: #33281f; --text: #f1e6d6; --muted: #b09a83; --accent: #d99a5b; --accent-soft: #4a3523; --fab: #8a5a33; --done: #8fbf7a; }
   :root[data-color="playful"]:not([data-theme="light"]) { --bg: #1f1622; --panel: #2a1f2e; --side: #241a28; --line: #3a2b40; --hover: #33263a; --text: #f6e9f3; --muted: #b597b5; --accent: #ff7ab8; --accent-soft: #4a2440; --fab: #c23d7f; --done: #5fd6a8; }
+  :root[data-color="simple"]:not([data-theme="light"])  { --bg: #121212; --panel: #1c1c1c; --side: #171717; --line: #2a2a2a; --hover: #232323; --text: #ececec; --muted: #9a9a9a; --accent: #9fb0c8; --accent-soft: #252b34; --fab: #3a3f47; --done: #8fbf9f; }
   :root[data-color="calm"]:not([data-theme="light"])    { --bg: #151a16; --panel: #1e251f; --side: #1a201b; --line: #2c362e; --hover: #253027; --text: #e3ebe4; --muted: #93a497; --accent: #86b896; --accent-soft: #22362a; --fab: #3f6a50; --done: #86b896; }
 }
 :root[data-color="focus"][data-theme="dark"]   { --bg: #0c1320; --panel: #141e2f; --side: #101827; --line: #23314a; --hover: #1b283f; --text: #e6edf7; --muted: #8a9ab3; --accent: #6b8cff; --accent-soft: #1c2a4c; --fab: #2a4590; --done: #4cc38a; }
 :root[data-color="cozy"][data-theme="dark"]    { --bg: #1f1813; --panel: #2a211a; --side: #241c16; --line: #3a2e24; --hover: #33281f; --text: #f1e6d6; --muted: #b09a83; --accent: #d99a5b; --accent-soft: #4a3523; --fab: #8a5a33; --done: #8fbf7a; }
+:root[data-color="simple"][data-theme="dark"]  { --bg: #121212; --panel: #1c1c1c; --side: #171717; --line: #2a2a2a; --hover: #232323; --text: #ececec; --muted: #9a9a9a; --accent: #9fb0c8; --accent-soft: #252b34; --fab: #3a3f47; --done: #8fbf9f; }
 :root[data-color="playful"][data-theme="dark"] { --bg: #1f1622; --panel: #2a1f2e; --side: #241a28; --line: #3a2b40; --hover: #33263a; --text: #f6e9f3; --muted: #b597b5; --accent: #ff7ab8; --accent-soft: #4a2440; --fab: #c23d7f; --done: #5fd6a8; }
 :root[data-color="calm"][data-theme="dark"]    { --bg: #151a16; --panel: #1e251f; --side: #1a201b; --line: #2c362e; --hover: #253027; --text: #e3ebe4; --muted: #93a497; --accent: #86b896; --accent-soft: #22362a; --fab: #3f6a50; --done: #86b896; }
 /* the 3 colour dots shown for each theme in the menus */
@@ -116,7 +125,17 @@ button { cursor: pointer; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-.ic { width: 18px; height: 18px; flex: none; display: inline-block; vertical-align: -3px; }
+.ic { width: 18px; height: 18px; flex: none; display: inline-block; vertical-align: -3px; fill: #fff; border-radius: 30%;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--ic) 60%, #fff), var(--ic)); box-shadow: inset 0 0 0 .5px rgba(0, 0, 0, .06); }
+.ic .sym { transform-origin: 12px 12px; transform: scale(.6); }
+.ic.plain { fill: currentColor; background: none; box-shadow: none; border-radius: 0; }
+.ic.plain .sym { transform: none; }
+/* Tiny places: only the coloured symbol */
+.chip .ic, .desc-link .ic, .add-line .ic { fill: var(--ic, currentColor); background: none; box-shadow: none; border-radius: 0; }
+.chip .ic .sym, .desc-link .ic .sym, .add-line .ic .sym { transform: none; }
+/* "Simple" theme: thin grey outlines, no coloured squares */
+:root[data-color="simple"] .ic { background: none; box-shadow: none; border-radius: 0; fill: none; stroke: var(--muted); stroke-width: 1.3; stroke-linejoin: round; }
+:root[data-color="simple"] .ic .sym { transform: scale(.9); }
 .logo { width: 26px; height: 26px; flex: none; }
 
 /* ---------- 3 columns: 1 : 3.5 : 1.5 ---------- */
@@ -132,7 +151,32 @@ button { cursor: pointer; }
 /* ---------- Left: categories ---------- */
 .full { display: flex; flex-direction: column; min-height: 100%; }
 .bar { display: none; }
-.brand { display: flex; align-items: center; gap: 9px; padding: 0 6px 22px; }
+.brand { display: flex; align-items: center; gap: 9px; padding: 4px 6px; margin: -4px 0 18px; width: 100%; border: 0; background: none; border-radius: 10px; text-align: left; transition: background .15s; }
+.brand:hover { background: var(--hover); }
+.cat-fold, .side-rows button {
+  width: 100%; padding: 7px 10px; border: 0; background: transparent; border-radius: 9px; gap: 10px; align-items: center;
+  font-size: 14px; text-align: left; display: flex; color: var(--muted); transition: background .15s;
+}
+.cat-fold { margin-bottom: 2px; }
+.cat-fold span, .side-rows button span { flex: 1 0 auto; white-space: nowrap; }
+.cat-fold:hover, .side-rows button:hover { background: var(--hover); color: var(--text); }
+.cat-fold .ic { width: 22px; height: 22px; }
+.cat-fold .chev { font-style: normal; font-size: 16px; transition: transform .2s; }
+.cat-fold .chev.open { transform: rotate(90deg); }
+.side-rows { margin-top: 2px; display: flex; flex-direction: column; gap: 2px; }
+.side-rows button em { font-style: normal; font-size: 12px; opacity: .8; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.side-rows button.active { background: var(--done-soft); color: var(--done); font-weight: 600; }
+.side-rows .ic, .left-foot .ic { width: 22px; height: 22px; }
+/* Sidebar folded into the thin bar (click "Mytodo") */
+@media (min-width: 1000px) {
+  .app.left-closed { grid-template-columns: 68px minmax(0, 3.5fr) minmax(0, 1.5fr); }
+  .app.left-closed .col-left { padding: 20px 12px; }
+  .app.left-closed .full { display: none; }
+  .app.left-closed .bar { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 100%; }
+  .app.left-closed .bar .spacer { flex: 1; }
+  /* the logo stays exactly where it is in the open sidebar */
+  .app.left-closed .bar .bar-logo { align-self: flex-start; width: auto; height: auto; padding: 4px 6px; margin: -4px 0 18px; border-radius: 10px; }
+}
 .brand b { font-size: 18px; letter-spacing: -.01em; flex: 1; }
 .icon-btn {
   border: 0; background: var(--panel); width: 34px; height: 34px; border-radius: 10px;
@@ -185,7 +229,7 @@ button { cursor: pointer; }
 .bar-btn:hover { background: var(--hover); }
 .bar-btn.active { background: var(--done-soft); }
 .bar-btn.open { background: var(--accent-soft); }
-.bar-btn .ic { width: 22px; height: 22px; }
+.bar-btn .ic { width: 24px; height: 24px; }
 
 /* Pop-ups: categories in the small window, right-click menu */
 .popover, .menu {
@@ -417,6 +461,12 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 /* Phone, new task: only the small box, right above the keyboard */
 .sheet.compact { height: auto; min-height: 0; max-height: 50dvh; }
 .sheet.full { height: calc(100vh - 24px); height: calc(100dvh - 24px); max-height: none; }   /* swiped up: full screen */
+/* Big screen: the panel floats, rounded at the bottom too, so you can see where it ends */
+@media (min-width: 1000px) {
+  .sheet { bottom: 8px; border-radius: 22px; transform: translate(-50%, calc(100% + 16px)); border: 1px solid var(--line); }
+  .sheet.open { transform: translateX(-50%); }
+  .sheet.full { height: calc(100dvh - 16px); }
+}
 .sheet-handle, .sheet-top { cursor: grab; touch-action: none; }
 .sheet.compact .sheet-body { padding-bottom: 14px; }
 .more-details { margin: -12px 0 0 4px; }
@@ -583,6 +633,17 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .acct-status.s-offline, .acct-status.s-paused { color: var(--warn); }
 .acct-status.s-error { color: var(--danger); }
 #langPop { width: 200px; }
+/* Sidebar: short account row with a toggle */
+.acct.compact { padding: 6px; }
+.acct-row { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 9px; cursor: pointer; min-width: 0; }
+.acct-row:hover { background: var(--hover); }
+.acct-row .acct-me img, .acct-row .acct-me .avatar { width: 24px; height: 24px; font-size: 12px; }
+.acct-row .acct-name { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-row .acct-status { margin: 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+.acct-row .chev { font-style: normal; color: var(--muted); transition: transform .2s; }
+.acct-row .chev.open { transform: rotate(90deg); }
+.acct-more { padding: 8px 6px 4px; }
+.acct-mail { display: block; color: var(--muted); font-size: 12px; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acct-alt { display: block; margin: 10px 2px 0; }
 .acct-status.s-badkey { color: var(--warn); }
 .script-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
@@ -713,8 +774,11 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   .col-right .group { min-height: 0; }
   .col-right .task { padding: 12px 14px 12px 16px; font-size: 15px; }
   .task .del, .task .more { opacity: 1; }
-  .sheet { left: 0; right: 0; width: auto; height: 50dvh; transform: translateY(100%); }
+  /* floats like on the big screen: small gap left, right and bottom (above the iPhone home bar), rounded all round */
+  .sheet { left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); width: auto; height: 50dvh;
+           border-radius: 22px; border: 1px solid var(--line); transform: translateY(calc(100% + 16px + env(safe-area-inset-bottom))); }
   .sheet.open { transform: none; }
+  .sheet.full { height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
 }
 @media (max-width: 560px) {
   .col-mid, .col-right, .col-screen { padding-left: 14px; padding-right: 14px; }
@@ -726,7 +790,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 <!-- Opening animation (0.8 s) when the app really starts; a tap skips it -->
 <div class="splash" id="splash" aria-hidden="true">
   <svg viewBox="0 0 24 24">
-    <defs><linearGradient id="splashGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9a7f5"/><stop offset="1" stop-color="#5b7cf0"/></linearGradient></defs>
+    <defs><linearGradient id="splashGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BB2BA"/><stop offset="1" stop-color="#558E9B"/></linearGradient></defs>
     <rect width="24" height="24" rx="6" fill="url(#splashGrad)"/>
     <circle class="c1" cx="7.5" cy="7.6" r="1.9" fill="#fff"/><circle class="c2" cx="7.5" cy="12" r="1.9" fill="#fff"/>
     <circle class="c3" cx="7.5" cy="16.4" r="1.5" fill="none" stroke="#fff" stroke-width=".9"/>
@@ -1095,7 +1159,7 @@ const I18N = {
     'Normal': 'Bình thường', 'Important': 'Quan trọng', 'Very important': 'Rất quan trọng', 'Most important': 'Quan trọng nhất',
     '⚠️ Could not save. Please use Export to back up your tasks.': '⚠️ Không lưu được. Dùng Xuất để sao lưu công việc.',
     'Auto (follows your device)': 'Tự động (Theo thiết bị)', 'Auto': 'Tự động', 'Light': 'Sáng', 'Dark': 'Tối',
-    'Classic': 'Cổ điển', 'Focus': 'Tập trung', 'Cozy': 'Ấm áp', 'Playful': 'Vui tươi', 'Calm': 'Dịu nhẹ',
+    'Classic': 'Cổ điển', 'Focus': 'Tập trung', 'Cozy': 'Ấm áp', 'Playful': 'Vui tươi', 'Calm': 'Dịu nhẹ', 'Simple': 'Đơn giản',
     'Theme: {name}': 'Giao diện: {name}', 'Theme: {name} — Change': 'Giao diện: {name} — Đổi',
     'Sound: on — Change': 'Âm thanh: bật — Đổi', 'Sound: off — Change': 'Âm thanh: tắt — Đổi',
     'Sound on': 'Bật', 'Sound off': 'Tắt',
@@ -1142,7 +1206,7 @@ const I18N = {
     '⚠️ This file is not a valid backup': '⚠️ Tệp này không phải bản sao lưu hợp lệ',
     'Import {n} tasks? This replaces your current tasks.': 'Nhập {n} việc? Việc này sẽ thay thế các việc hiện có.',
     'Settings': 'Cài đặt', 'Theme': 'Giao diện', 'Sound': 'Âm thanh', 'Sound when a task is done': 'Âm thanh khi xong việc',
-    'On': 'Bật', 'Off': 'Tắt', 'Backup': 'Sao lưu', 'Language': 'Ngôn ngữ',
+    'On': 'Bật', 'Off': 'Tắt', 'Backup': 'Sao lưu', 'Language': 'Ngôn ngữ', 'Hide sidebar': 'Ẩn thanh bên', 'Show sidebar': 'Hiện thanh bên',
     'Sign-in works on the online version: sophianguyen125.github.io/mytodo': 'Đăng nhập chỉ dùng được trên bản online: sophianguyen125.github.io/mytodo',
     'Cannot reach Google. Please check your internet connection.': 'Không kết nối được Google. Hãy kiểm tra mạng.',
     'Please allow Mytodo to save to your Google Drive': 'Hãy cho phép Mytodo lưu vào Google Drive của bạn',
@@ -1181,7 +1245,7 @@ const I18N = {
     'Normal': 'Normal', 'Important': 'Wichtig', 'Very important': 'Sehr wichtig', 'Most important': 'Am wichtigsten',
     '⚠️ Could not save. Please use Export to back up your tasks.': '⚠️ Speichern fehlgeschlagen. Bitte sichere deine Aufgaben mit „Exportieren“.',
     'Auto (follows your device)': 'Automatisch (wie das Gerät)', 'Auto': 'Auto', 'Light': 'Hell', 'Dark': 'Dunkel',
-    'Classic': 'Klassisch', 'Focus': 'Fokus', 'Cozy': 'Gemütlich', 'Playful': 'Verspielt', 'Calm': 'Ruhig',
+    'Classic': 'Klassisch', 'Focus': 'Fokus', 'Cozy': 'Gemütlich', 'Playful': 'Verspielt', 'Calm': 'Ruhig', 'Simple': 'Schlicht',
     'Theme: {name}': 'Design: {name}', 'Theme: {name} — Change': 'Design: {name} — Ändern',
     'Sound: on — Change': 'Ton: an — Ändern', 'Sound: off — Change': 'Ton: aus — Ändern',
     'Sound on': 'Ton an', 'Sound off': 'Ton aus',
@@ -1228,7 +1292,7 @@ const I18N = {
     '⚠️ This file is not a valid backup': '⚠️ Diese Datei ist keine gültige Sicherung',
     'Import {n} tasks? This replaces your current tasks.': '{n} Aufgaben importieren? Das ersetzt deine aktuellen Aufgaben.',
     'Settings': 'Einstellungen', 'Theme': 'Design', 'Sound': 'Ton', 'Sound when a task is done': 'Ton, wenn eine Aufgabe erledigt ist',
-    'On': 'An', 'Off': 'Aus', 'Backup': 'Sicherung', 'Language': 'Sprache',
+    'On': 'An', 'Off': 'Aus', 'Backup': 'Sicherung', 'Language': 'Sprache', 'Hide sidebar': 'Seitenleiste ausblenden', 'Show sidebar': 'Seitenleiste einblenden',
     'Sign-in works on the online version: sophianguyen125.github.io/mytodo': 'Anmelden geht nur in der Online-Version: sophianguyen125.github.io/mytodo',
     'Cannot reach Google. Please check your internet connection.': 'Google ist nicht erreichbar. Bitte prüfe deine Internetverbindung.',
     'Please allow Mytodo to save to your Google Drive': 'Bitte erlaube Mytodo, in deinem Google Drive zu speichern',
@@ -1285,8 +1349,13 @@ const dayShort = k => (DAY_SHORT[lang()] || DAY_LABELS)[fromKey(k).getDay()];
 const dayLong = k => (DAY_LONG[lang()] || DAY_FULL)[fromKey(k).getDay()];
 const fmtD = k => lang() === 'de' ? fmt(k).replace('/', '.') : fmt(k);
 const dateSep = () => lang() === 'de' ? '.' : '/';
-const PALETTE = ['#dbeafe', '#d1fae5', '#fde2cf', '#e9dcfb', '#fef3c7', '#fbdde7',
-                 '#cffafe', '#e2f0cb', '#f3e8d8', '#e0e7ff', '#fcd5d5', '#d9f2e6'];
+// Category colours (palette): Dewpoint, Sweet Mint, Fairytale Dream, Wisteria Purple, Pancake, Rose,
+// Neptune, Spanish Green, Tumbleweed, Dusty Lavender, Atomic Tangerine, Buttercup
+const PALETTE = ['#C1D8DF', '#AECBB8', '#F9D0CD', '#C6B3CA', '#F9D487', '#E89B88',
+                 '#7BB2BA', '#84A48B', '#D1A996', '#A386A9', '#F79E70', '#E7C878'];
+// The old colours become the matching new ones (on every device, so syncing never brings the old ones back)
+const OLD_PALETTE = ['#dbeafe', '#d1fae5', '#fde2cf', '#e9dcfb', '#fef3c7', '#fbdde7',
+                     '#cffafe', '#e2f0cb', '#f3e8d8', '#e0e7ff', '#fcd5d5', '#d9f2e6'];
 const $ = s => document.querySelector(s);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1320,17 +1389,18 @@ const ICON_PATHS = {
   bellOff: '<path d="M12 2a6.5 6.5 0 0 1 6.5 6.5v4.2l1.8 3.3H3.7l1.8-3.3V8.5A6.5 6.5 0 0 1 12 2zM9.2 18h5.6a2.8 2.8 0 0 1-5.6 0z" opacity=".45"/><path d="M3.3 4.7 4.7 3.3l16 16-1.4 1.4z"/>',
 };
 const ICON_COLORS = {
-  sun: 'yellow', moon: 'indigo', auto: 'lavender', tag: 'lavender', inbox: 'blue', calendar: 'teal', alarm: 'orange',
-  check: 'green', pencil: 'purple', download: 'bluegrey', upload: 'bluegrey', sparkle: 'yellow', plus: '', trash: '', palette: 'lavender',
-  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'lavender', bell: 'yellow', bellOff: 'bluegrey', link: 'blue', globe: 'teal',
+  sun: 'yellow', moon: 'indigo', auto: 'lavender', tag: 'pink', inbox: 'blue', calendar: 'teal', alarm: 'orange',
+  check: 'green', pencil: 'purple', download: 'bluegrey', upload: 'bluegrey', sparkle: 'yellow', plus: '', trash: '', palette: 'orange',
+  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'blue', bell: 'yellow', bellOff: 'bluegrey', link: 'blue', globe: 'teal',
 };
+// Icons look like the Mytodo logo: a rounded square in the icon's pastel colour, white symbol inside.
+// Icons without a colour (plus, trash) stay a plain symbol. Tiny places (task labels) show only the coloured symbol.
 function icon(name, color = ICON_COLORS[name]) {
-  const style = color ? ` style="color:var(--i-${color})"` : '';
-  return `<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"${style}>${ICON_PATHS[name]}</svg>`;
+  return `<svg class="ic${color ? '' : ' plain'}" viewBox="0 0 24 24" aria-hidden="true"${color ? ` style="--ic:var(--i-${color})"` : ''}><g class="sym">${ICON_PATHS[name]}</g></svg>`;
 }
 // Mini version of the app icon (each copy needs its own gradient id)
 const logo = id => `<svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
-  <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9a7f5"/><stop offset="1" stop-color="#5b7cf0"/></linearGradient></defs>
+  <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BB2BA"/><stop offset="1" stop-color="#558E9B"/></linearGradient></defs>
   <rect width="24" height="24" rx="6" fill="url(#${id})"/>
   <g fill="#fff"><circle cx="7.5" cy="7.6" r="1.9"/><circle cx="7.5" cy="12" r="1.9"/></g>
   <circle cx="7.5" cy="16.4" r="1.5" fill="none" stroke="#fff" stroke-width=".9"/>
@@ -1347,7 +1417,11 @@ function defaultData() {
   return { tasks: [], categories: cats };
 }
 function withColors(d) {
-  d.categories.forEach(c => { if (!c.color) c.color = nextColor(d.categories); });
+  d.categories.forEach(c => {
+    const old = OLD_PALETTE.indexOf((c.color || '').toLowerCase());
+    if (old >= 0) c.color = PALETTE[old];
+    if (!c.color) c.color = nextColor(d.categories);
+  });
   d.deleted = d.deleted || {};   // tombstones: what was deleted and when (for merging devices)
   d.gmap = d.gmap || {};         // Mytodo task id -> Google Tasks id and last sync time
   d.google = d.google || {};     // Google Tasks list id
@@ -1374,11 +1448,12 @@ function saveUi() { try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } ca
 const THEMES = { auto: ['auto', 'Auto (follows your device)'], light: ['sun', 'Light'], dark: ['moon', 'Dark'] };
 // Colour themes: name and 3 dots for the menus (the colours themselves are in the CSS)
 const COLORS = {
-  classic: ['Classic', ['#4f6ef7', '#f7f6f3', '#1f2d5c']],
+  classic: ['Classic', ['#558E9B', '#f7f6f3', '#84A48B']],
   focus: ['Focus', ['#1e3a8a', '#dbe2ec', '#0f1b2d']],
   cozy: ['Cozy', ['#a0612b', '#f3e0c8', '#5a3a22']],
   playful: ['Playful', ['#e0569a', '#c9f0dc', '#fdf1b8']],
   calm: ['Calm', ['#4f7d5f', '#dfeae2', '#b9b4a8']],
+  simple: ['Simple', ['#3f4f66', '#ececec', '#1a1a1a']],
 };
 function applyTheme() {
   if (ui.theme === 'light' || ui.theme === 'dark') document.documentElement.dataset.theme = ui.theme;
@@ -1661,13 +1736,17 @@ function renderLeft() {
   const popOpen = !$('#catPop').hidden;
   $('#left').innerHTML = `
     <div class="full">
-      <div class="brand">${logo('logoFull')}<b>Mytodo</b></div>
-      <div class="section-title">${tr('Categories')}</div>
-      ${tagListHtml()}
-      ${accountHtml()}
+      <button class="brand" data-act="left-toggle" title="${tr('Hide sidebar')}">${logo('logoFull')}<b>Mytodo</b></button>
+      <button class="cat-fold" data-act="cats-fold" aria-expanded="${!ui.catsClosed}">${icon('tag')}<span>${tr('Categories')}</span><i class="chev${ui.catsClosed ? '' : ' open'}">›</i></button>
+      ${ui.catsClosed ? '' : tagListHtml()}
+      <div class="side-rows">
+        <button data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}<span>${tr('Sound')}</span><em>${tr(ui.sound === false ? 'Off' : 'On')}</em></button>
+        <button data-act="theme">${icon(themeIcon)}<span>${tr('Theme')}</span><em>${tr((COLORS[ui.color] || COLORS.classic)[0])}</em></button>
+        <button data-act="lang-pop">${icon('globe')}<span>${tr('Language')}</span><em>${LANGS[lang()]}</em></button>
+        <button data-act="done" class="${doneOpen ? 'active' : ''}">${icon('check')}<span>${tr('Done')}</span><em>${doneCount || ''}</em></button>
+      </div>
+      ${accountHtml(true)}
       <div class="left-foot">
-        <button data-act="done" class="${doneOpen ? 'active' : ''}">${icon('check')}<span>${tr('Done')}</span>${doneCount || ''}</button>
-        <button data-act="edit-cats">${icon('pencil')}<span>${tr('Edit categories')}</span></button>
         <div class="row">
           <button data-act="export">${icon('download')}<span>${tr('Export')}</span></button>
           <button data-act="import">${icon('upload')}<span>${tr('Import')}</span></button>
@@ -1675,23 +1754,21 @@ function renderLeft() {
       </div>
     </div>
     <div class="bar">
-      ${logo('logoBar')}
+      <button class="bar-btn bar-logo" data-act="left-toggle" title="${tr('Show sidebar')}">${logo('logoBar')}</button>
       <button class="bar-btn${popOpen ? ' open' : ''}" data-act="cat-pop" title="${tr('Categories')}">${icon('tag')}</button>
       <button class="bar-btn" data-act="theme" title="${tr('Theme: {name}', { name: tr(themeName) })}">${icon(themeIcon)}</button>
       <button class="bar-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
+      <button class="bar-btn" data-act="lang-pop" title="${tr('Language')}: ${LANGS[lang()]}">${icon('globe')}</button>
       <button class="bar-btn" data-act="acct-pop" title="${ui.google ? esc(ui.google.email) : tr('Sign in with Google')}">${
         ui.google && ui.google.picture ? `<img src="${esc(ui.google.picture)}" alt="" referrerpolicy="no-referrer">` : icon('user')}</button>
       <span class="spacer"></span>
       <button class="bar-btn${doneOpen ? ' active' : ''}" data-act="done" title="${tr('Done')}${doneCount ? ' (' + doneCount + ')' : ''}">${icon('check')}</button>
-      <button class="bar-btn" data-act="edit-cats" title="${tr('Edit categories')}">${icon('pencil')}</button>
       <button class="bar-btn" data-act="export" title="${tr('Export (backup)')}">${icon('download')}</button>
       <button class="bar-btn" data-act="import" title="${tr('Import (restore backup)')}">${icon('upload')}</button>
     </div>`;
   if (popOpen) renderCatPop();
-  // Laptop: sound and theme buttons on the right of the "Tasks" title (the phone has them on the Me screen)
-  $('#titleBtns').innerHTML = `<button class="icon-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
-    <button class="icon-btn" data-act="theme" title="${tr('Theme: {name} — Change', { name: tr(themeName) })}">${icon(themeIcon)}</button>
-    <button class="icon-btn" data-act="lang-pop" title="${tr('Language')}: ${LANGS[lang()]}">${icon('globe')}</button>`;
+  // Laptop: sound, theme and language are rows in the sidebar now; clicking "Mytodo" folds the sidebar into the thin bar
+  document.querySelector('.app').classList.toggle('left-closed', !!ui.leftClosed);
   renderScreen();
   if (addingCat) focusVisible('.new-cat-input');
 }
@@ -1742,6 +1819,9 @@ function onTagAreaClick(e) {
   }
   const act = b.dataset.act;
   if (act === 'new-cat') { addingCat = true; renderLeft(); return; }
+  if (act === 'left-toggle') { ui.leftClosed = !ui.leftClosed; saveUi(); closeCatPop(); closeThemePop(); closeLangPop(); return renderLeft(); }
+  if (act === 'acct-toggle') { if (e.target.closest('.link-btn')) return; ui.acctOpen = !ui.acctOpen; saveUi(); return renderLeft(); }
+  if (act === 'cats-fold') { ui.catsClosed = !ui.catsClosed; saveUi(); return renderLeft(); }
   if (act === 'cat-pop') { $('#catPop').hidden ? openCatPop(b) : closeCatPop(); return; }
   if (act === 'theme') return $('#themePop').hidden ? openThemePop(b) : closeThemePop();
   if (act === 'theme-toggle') { themeOpen = !themeOpen; return renderMe(); }
@@ -3430,19 +3510,30 @@ function scriptFormHtml() {
         <button class="link-btn" data-act="script-form">${tr('Cancel')}</button></div>
       <p class="acct-note">${tr('Your own Google Apps Script saves your tasks. It never asks you to sign in again.')}</p></div>`;
 }
-function accountHtml() {
+// compact = the sidebar: one short row (picture, name, status); the › toggle unfolds email, Calendar and Sign out
+function accountHtml(compact) {
   if (!ui.google) return `<div class="acct">
       <button class="btn google-btn" data-act="signin">${G_LOGO} ${tr('Sign in with Google')}</button>
       <p class="acct-note">${tr('Sign in to keep your tasks safe and use them on all your devices.')}</p>
       ${scriptForm ? scriptFormHtml() : `<button class="link-btn acct-alt" data-act="script-form">${tr('Or use your own script (key)')}</button>`}</div>`;
   const g = ui.google;
+  const pic = g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : `<span class="avatar">${esc((g.name || '?')[0])}</span>`;
+  const rest = `${scriptForm && g.script ? scriptFormHtml() : ''}
+      <label class="acct-cal"><input type="checkbox" data-act="calendar" ${g.calendar ? 'checked' : ''}> ${tr('Link to Google Calendar')}</label>
+      <button class="link-btn" data-act="signout">${tr('Sign out')}</button>`;
+  if (compact) {
+    const open = !!ui.acctOpen || (scriptForm && g.script);
+    return `<div class="acct compact${open ? ' open' : ''}">
+      <div class="acct-row" role="button" tabindex="0" data-act="acct-toggle" aria-expanded="${open}">
+        <span class="acct-me">${pic}</span><b class="acct-name">${esc(g.name)}</b>
+        <span class="acct-status s-${gState}">${statusText()}</span><i class="chev${open ? ' open' : ''}">›</i></div>
+      ${open ? `<div class="acct-more"><span class="acct-mail">${esc(g.email)}</span>${rest}</div>` : ''}</div>`;
+  }
   return `<div class="acct">
-      <div class="acct-me">${g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : `<span class="avatar">${esc((g.name || '?')[0])}</span>`}
+      <div class="acct-me">${pic}
         <div class="acct-id"><b>${esc(g.name)}</b><span>${esc(g.email)}</span></div></div>
       <div class="acct-status s-${gState}">${statusText()}</div>
-      ${scriptForm && g.script ? scriptFormHtml() : ''}
-      <label class="acct-cal"><input type="checkbox" data-act="calendar" ${g.calendar ? 'checked' : ''}> ${tr('Link to Google Calendar')}</label>
-      <button class="link-btn" data-act="signout">${tr('Sign out')}</button></div>`;
+      ${rest}</div>`;
 }
 function setG(state) {
   gState = state;
