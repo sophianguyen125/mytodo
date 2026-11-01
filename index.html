@@ -469,6 +469,11 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); padding: 8px 12px;
   resize: none; outline: 0; margin-bottom: 14px; line-height: 1.5; overflow: hidden; display: block;
 }
+.desc-links { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 2px 14px; }
+.desc-links:empty { display: none; }
+.desc-link { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; background: var(--hover);
+  color: var(--text); text-decoration: none; font-size: 13px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.desc-link:hover { background: var(--accent-soft); }
 .sh-desc:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .subs { list-style: none; margin: 0; padding: 0; }
 .sub { display: flex; align-items: center; gap: 10px; padding: 5px 8px; border-radius: 10px; transition: background .15s; }
@@ -1015,6 +1020,19 @@ function toGoogle(t, cats) {
   return { title: (c ? c.name + ' · ' : '') + t.text, notes, due: t.doDay + 'T00:00:00.000Z',
            status: t.done ? 'completed' : 'needsAction' };
 }
+// The note lines that are not Time / Priority / Deadline (e.g. "Zoom: https://…") = the task's description
+function noteExtra(notes) {
+  return (notes || '').split('\n').filter(l => !/^(Time|Priority|Deadline): /.test(l)).join('\n').trim();
+}
+// Links in a text -> small buttons that open in a new tab (shows only the website name)
+function linkButtons(text) {
+  const urls = [...new Set((text || '').match(/https?:\/\/[^\s<>"']+/g) || [])].map(u => u.replace(/[.,;:!?)\]]+$/, ''));
+  return urls.map(u => {
+    let host = u;
+    try { host = new URL(u).hostname; } catch (e) {}
+    return `<a class="desc-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer" title="${esc(u)}">${icon('link')} ${esc(host)}</a>`;
+  }).join('');
+}
 // Google Task -> changes on a Mytodo task (title, category from the title, day, done)
 function applyGoogle(t, g, cats) {
   let title = (g.title || '').trim();
@@ -1035,6 +1053,7 @@ function applyGoogle(t, g, cats) {
   if (!dl) t.deadline = null;
   else if (!t.deadline || dl[3] || t.deadline.slice(5) !== pad(dl[2]) + '-' + pad(dl[1]))   // keep the year if the day is the same
     t.deadline = parseDate(dl[1] + '.' + dl[2] + (dl[3] ? '.' + dl[3] : ''), t.doDay || toKey(new Date())) || t.deadline || null;
+  t.description = noteExtra(notes);
   const done = g.status === 'completed';
   if (done !== !!t.done) { t.done = done; t.doneAt = done ? (Date.parse(g.completed) || Date.now()) : null; }
   return t;
@@ -1088,12 +1107,13 @@ const ICON_PATHS = {
   copy: '<path d="M8 2h11a2 2 0 0 1 2 2v12h-2V4H8zM3 7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   palette: '<path fill-rule="evenodd" d="M12 2C6.5 2 2 6.2 2 11.5S6.5 22 12 22c1.2 0 2-.8 2-1.9 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3c2.6 0 4.7-2.1 4.7-4.7C22 6 17.5 2 12 2zM6.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>',
   bell: '<path d="M12 2a6.5 6.5 0 0 1 6.5 6.5v4.2l1.8 3.3H3.7l1.8-3.3V8.5A6.5 6.5 0 0 1 12 2zM9.2 18h5.6a2.8 2.8 0 0 1-5.6 0z"/>',
+  link: '<path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0zM13 6.2l1.4-1.4a4.5 4.5 0 0 1 6.4 6.4L18.4 13.6 17 12.2l2.4-2.4a2.5 2.5 0 0 0-3.6-3.6L13.8 8.2zM11 17.8l-1.4 1.4a4.5 4.5 0 0 1-6.4-6.4l2.4-2.4L7 11.8l-2.4 2.4a2.5 2.5 0 0 0 3.6 3.6l1.4-1.4z"/>',
   bellOff: '<path d="M12 2a6.5 6.5 0 0 1 6.5 6.5v4.2l1.8 3.3H3.7l1.8-3.3V8.5A6.5 6.5 0 0 1 12 2zM9.2 18h5.6a2.8 2.8 0 0 1-5.6 0z" opacity=".45"/><path d="M3.3 4.7 4.7 3.3l16 16-1.4 1.4z"/>',
 };
 const ICON_COLORS = {
   sun: 'yellow', moon: 'indigo', auto: 'lavender', tag: 'lavender', inbox: 'blue', calendar: 'teal', alarm: 'orange',
   check: 'green', pencil: 'purple', download: 'bluegrey', upload: 'bluegrey', sparkle: 'yellow', plus: '', trash: '', palette: 'lavender',
-  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'lavender', bell: 'yellow', bellOff: 'bluegrey',
+  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'lavender', bell: 'yellow', bellOff: 'bluegrey', link: 'blue',
 };
 function icon(name, color = ICON_COLORS[name]) {
   const style = color ? ` style="color:var(--i-${color})"` : '';
@@ -2456,6 +2476,7 @@ function renderSheet() {
     ${compact ? '<button class="link-btn more-details" data-act="details">More details ⌄</button>' : `
     <div class="sh-section">${icon('notes')} Description</div>
     <textarea class="sh-desc" data-f="description" placeholder="Add notes…">${esc(t.description || '')}</textarea>
+    <div class="desc-links">${linkButtons(t.description)}</div>
     <div class="sh-section">${icon('list')} Sub-tasks
       ${subs.length ? `<span class="count${doneN === subs.length ? ' all' : ''}">${doneN}/${subs.length}</span>` : ''}</div>
     <ul class="subs">${ordered.map(s =>
@@ -2531,6 +2552,8 @@ sheetBody.addEventListener('input', e => {
   } else if (el.dataset.f === 'description') {
     const v = el.value;
     queueText('description', () => { findTask(id).description = v; });
+    const links = sheetBody.querySelector('.desc-links');
+    if (links) links.innerHTML = linkButtons(v);
   } else if (el.classList.contains('sub-text')) {
     const sid = el.closest('.sub').dataset.sid, v = el.value.trim();
     if (v) queueText('sub' + sid, () => { const s = (findTask(id).subtasks || []).find(x => x.id === sid); if (s) s.text = v; });
@@ -2933,6 +2956,11 @@ async function tasksSync() {
         applyGoogle(t, g, data.categories);
         t.updatedAt = Math.max(Date.now(), (t.updatedAt || 0) + 1);
         m.at = gTime; m.t = t.updatedAt;
+      } else if (t && !changedHere(t, m) && !(t.description || '').trim() && noteExtra(g.notes)) {
+        // Older tasks: an empty description gets the extra note lines from Google (never replaces your text)
+        t.description = noteExtra(g.notes);
+        t.updatedAt = Math.max(Date.now(), (t.updatedAt || 0) + 1);
+        m.t = t.updatedAt;
       }
     } else if (g.due) {
       const t = applyGoogle({ id: uid(), text: '', doDay: null, deadline: null, priority: 0, category: null,
