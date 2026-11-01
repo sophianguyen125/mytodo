@@ -582,6 +582,13 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .acct-status.s-saving { color: var(--muted); }
 .acct-status.s-offline, .acct-status.s-paused { color: var(--warn); }
 .acct-status.s-error { color: var(--danger); }
+.acct-alt { display: block; margin: 10px 2px 0; }
+.acct-status.s-badkey { color: var(--warn); }
+.script-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.script-form input { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); padding: 7px 10px; font-size: 13px; outline: 0; }
+.script-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.script-form .row { display: flex; align-items: center; gap: 12px; }
+.script-form .acct-note { margin-top: 0; }
 .acct-cal { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px; }
 .acct-cal input { width: 16px; height: 16px; accent-color: var(--accent); }
 .bar-btn img { width: 26px; height: 26px; border-radius: 50%; }
@@ -1511,6 +1518,8 @@ function onTagAreaClick(e) {
   if (act === 'signin') return signIn();
   if (act === 'signout') { closeAcctPop(); return $('#outDlg').showModal(); }
   if (act === 'reconnect') return reconnect();
+  if (act === 'script-form') { scriptForm = !scriptForm; renderLeft(); renderAcctPop(); return; }
+  if (act === 'script-connect') return connectScript(b.closest('.acct'));
   if (act === 'acct-pop') return $('#acctPop').hidden ? openAcctPop(b) : closeAcctPop();
 }
 function onTagAreaKey(e) {
@@ -2891,7 +2900,26 @@ function requestToken(prompt) {
   });
 }
 
+// "Own script" way: Mytodo talks only to the person's own Google Apps Script, which never needs Google's window
+const viaScript = () => !!(ui.google && ui.google.script);
+let scriptForm = false;   // the "web address + key" form in the account box
+async function scriptCall(op, extra = {}) {
+  let r;
+  try { r = await fetch(ui.google.script, { method: 'POST', body: JSON.stringify({ key: ui.google.key, op, ...extra }) }); }
+  catch (e) { setG(navigator.onLine ? 'error' : 'offline'); throw e; }
+  const out = r.ok ? await r.json().catch(() => null) : null;
+  if (!out) { setG('error'); throw new Error('Script answered ' + r.status); }
+  if (out.status === 403) { setG('badkey'); throw new Error('wrong key'); }
+  if ((out.status === 404 || out.status === 410) && extra.okMissing) return { status: out.status, body: null };
+  if (out.status < 200 || out.status >= 300) { setG('error'); throw new Error('Script: ' + (out.error || out.status)); }
+  return out;
+}
+
 async function gfetch(url, opts = {}) {
+  if (viaScript()) {   // only Google Tasks calls come here; the script allows only its one list
+    if (!url.startsWith(TASKS)) throw new Error('not allowed via script');
+    return (await scriptCall('tasks', { method: opts.method || 'GET', path: url.slice(TASKS.length), body: opts.body || null, okMissing: !!opts.okMissing })).body;
+  }
   if (!gToken || Date.now() > gTokenExp) { gToken = null; setG('paused'); throw new Error('paused'); }
   let r;
   try { r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + gToken, ...(opts.headers || {}) } }); }
@@ -2905,6 +2933,7 @@ async function gfetch(url, opts = {}) {
 
 // Drive: one hidden file "mytodo-data.json" in Mytodo's own app folder
 async function driveRead() {
+  if (viaScript()) return (await scriptCall('read')).body;
   if (!driveFileId) {
     const q = encodeURIComponent("name='mytodo-data.json'");
     const r = await gfetch(`${DRIVE}?spaces=appDataFolder&q=${q}&fields=files(id)`);
@@ -2914,6 +2943,7 @@ async function driveRead() {
 }
 async function driveWrite(obj) {
   const body = JSON.stringify(obj);
+  if (viaScript()) return scriptCall('write', { body });
   if (driveFileId) return gfetch(`${UPLOAD}/${driveFileId}?uploadType=media`, { method: 'PATCH', headers: JSON_HEAD, body });
   const b = 'mytodo' + Date.now();
   const multipart = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
@@ -2926,9 +2956,13 @@ async function driveWrite(obj) {
 
 // Google Tasks (shown at the top of each day in Google Calendar), list "Mytodo", both ways
 async function tasksSync() {
-  const lists = (await gfetch(`${TASKS}/users/@me/lists?maxResults=100`)).items || [];
-  let list = lists.find(l => l.id === data.google.listId) || lists.find(l => l.title === 'Mytodo');
-  if (!list) list = await gfetch(`${TASKS}/users/@me/lists`, { method: 'POST', headers: JSON_HEAD, body: JSON.stringify({ title: 'Mytodo' }) });
+  let list;
+  if (viaScript()) list = (await scriptCall('list')).body;   // the script's own list ("Mytodo" or "Mytodo-test")
+  else {
+    const lists = (await gfetch(`${TASKS}/users/@me/lists?maxResults=100`)).items || [];
+    list = lists.find(l => l.id === data.google.listId) || lists.find(l => l.title === 'Mytodo');
+    if (!list) list = await gfetch(`${TASKS}/users/@me/lists`, { method: 'POST', headers: JSON_HEAD, body: JSON.stringify({ title: 'Mytodo' }) });
+  }
   data.google.listId = list.id;
   const base = `${TASKS}/lists/${list.id}/tasks`;
 
@@ -3006,7 +3040,7 @@ async function tasksSync() {
 
 // One full round: read Drive, merge, sync Calendar, write Drive
 async function syncNow() {
-  if (!ui.google || gState === 'paused') return;
+  if (!ui.google || gState === 'paused' || gState === 'badkey') return;
   if (syncing) { syncAgain = true; return; }
   syncing = true;
   clearTimeout(retryTimer);
@@ -3063,6 +3097,26 @@ async function signIn() {
   }
 }
 
+async function connectScript(box) {
+  const url = box.querySelector('.sf-url').value.trim(), key = box.querySelector('.sf-key').value.trim();
+  if (!/^https:\/\/script\.google\.com\/(a\/[\w.-]+\/)?macros\/s\/[\w-]+\/exec$/.test(url)) return toast('Please paste the script\'s web address (it ends with /exec)');
+  if (!key) return toast('Please paste your secret key');
+  let hello;
+  try { hello = await fetch(url, { method: 'POST', body: JSON.stringify({ key, op: 'hello' }) }).then(x => x.json()); }
+  catch (e) { return toast('Cannot reach the script. Please check the address and your internet.'); }
+  if (hello.status === 403) return toast('This key is not right. Please check it.');
+  if (hello.status !== 200) return toast('The script answered: ' + (hello.error || hello.status));
+  const same = ui.google && ui.google.script;   // only the key changed: keep the Calendar choice
+  ui.google = { script: url, key, email: hello.body.email, name: 'Own script · ' + hello.body.name, picture: '',
+                calendar: same ? !!ui.google.calendar : false };
+  saveUi();
+  scriptForm = false; gToken = null; forgetPass();
+  gState = 'ok'; driveFileId = null; showGbar();
+  renderLeft(); renderAcctPop();
+  await syncNow();   // merges this device's tasks with the ones the script keeps
+  toast('Connected ✓ Your own script now saves your tasks');
+}
+
 async function reconnect() {
   if (!ui.google || reconnecting) return;
   reconnecting = true;
@@ -3076,8 +3130,10 @@ async function setCalendar(on) {
   ui.google.calendar = on; saveUi();
   if (on) {
     try {
-      const r = await requestToken('');   // asks Google for the extra "Tasks" permission
-      if (!google.accounts.oauth2.hasGrantedAllScopes(r, SCOPE_TASKS)) throw new Error('not granted');
+      if (!viaScript()) {
+        const r = await requestToken('');   // asks Google for the extra "Tasks" permission
+        if (!google.accounts.oauth2.hasGrantedAllScopes(r, SCOPE_TASKS)) throw new Error('not granted');
+      }
       setG('ok');
       await syncNow();
       toast('Linked ✓ Tasks with a do day now appear in Google Calendar');
@@ -3119,17 +3175,28 @@ function statusText() {
   if (gState === 'offline') return 'Offline – will save later';
   if (gState === 'error') return 'Google problem – trying again';
   if (gState === 'paused') return 'Paused – <button class="link-btn" data-act="reconnect">Reconnect</button>';
+  if (gState === 'badkey') return 'Key not accepted – <button class="link-btn" data-act="script-form">Enter it again</button>';
   return 'Saved ✓ ' + (lastSaved ? ago(lastSaved) : '');
+}
+function scriptFormHtml() {
+  return `<div class="script-form">
+      <input class="sf-url" placeholder="Script web address (…/exec)" autocomplete="off" spellcheck="false" value="${esc(ui.google && ui.google.script || '')}">
+      <input class="sf-key" type="password" placeholder="Secret key" autocomplete="off">
+      <div class="row"><button class="btn" data-act="script-connect">Connect</button>
+        <button class="link-btn" data-act="script-form">Cancel</button></div>
+      <p class="acct-note">Your own Google Apps Script saves your tasks. It never asks you to sign in again.</p></div>`;
 }
 function accountHtml() {
   if (!ui.google) return `<div class="acct">
       <button class="btn google-btn" data-act="signin">${G_LOGO} Sign in with Google</button>
-      <p class="acct-note">Sign in to keep your tasks safe and use them on all your devices.</p></div>`;
+      <p class="acct-note">Sign in to keep your tasks safe and use them on all your devices.</p>
+      ${scriptForm ? scriptFormHtml() : '<button class="link-btn acct-alt" data-act="script-form">Or use your own script (key)</button>'}</div>`;
   const g = ui.google;
   return `<div class="acct">
       <div class="acct-me">${g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : `<span class="avatar">${esc((g.name || '?')[0])}</span>`}
         <div class="acct-id"><b>${esc(g.name)}</b><span>${esc(g.email)}</span></div></div>
       <div class="acct-status s-${gState}">${statusText()}</div>
+      ${scriptForm && g.script ? scriptFormHtml() : ''}
       <label class="acct-cal"><input type="checkbox" data-act="calendar" ${g.calendar ? 'checked' : ''}> Link to Google Calendar</label>
       <button class="link-btn" data-act="signout">Sign out</button></div>`;
 }
@@ -3388,8 +3455,9 @@ setTimeout(endSplash, 1500);   // in case an animation event is missed
 document.body.dataset.screen = 'tasks';
 makeHapticSwitch();
 // After opening: use the saved Google pass if it is still valid, otherwise show the "paused" bar
-const pass = ui.google && loadPass();
-if (pass) { gToken = pass.t; gTokenExp = pass.exp; gState = 'ok'; }
+const pass = ui.google && !viaScript() && loadPass();
+if (viaScript()) gState = 'ok';
+else if (pass) { gToken = pass.t; gTokenExp = pass.exp; gState = 'ok'; }
 else if (ui.google) gState = 'paused';
 showGbar();
 $('#aiTitle').insertAdjacentHTML('afterbegin', icon('sparkle'));
