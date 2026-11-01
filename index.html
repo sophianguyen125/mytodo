@@ -1239,7 +1239,7 @@ const I18N = {
     'Create tasks': 'Tạo việc', 'Check the tasks': 'Kiểm tra các việc', 'Keep your tasks on this device?': 'Giữ công việc trên thiết bị này?',
     'Choose "Remove" on a shared computer (e.g. at university). Your tasks stay safe in your Google account either way.': 'Chọn "Xóa" nếu dùng máy chung (vd. ở trường). Dù chọn gì, công việc vẫn an toàn trong tài khoản Google của bạn.',
     'Remove from this device': 'Xóa khỏi thiết bị này', 'Keep tasks': 'Giữ công việc', 'Save this task?': 'Lưu việc này?', 'Discard': 'Bỏ',
-    'New task (press A twice)': 'Việc mới (nhấn A hai lần)', 'New task': 'Việc mới', 'Undo': 'Hoàn tác',
+    'New task (press A twice)': 'Việc mới (nhấn A hai lần)', 'New task': 'Việc mới', 'New task for {day}… (Enter to add, Esc to close)': 'Việc mới cho {day}… (Enter để thêm, Esc để đóng)', 'Undo': 'Hoàn tác',
   },
   de: {
     'Normal': 'Normal', 'Important': 'Wichtig', 'Very important': 'Sehr wichtig', 'Most important': 'Am wichtigsten',
@@ -1325,7 +1325,7 @@ const I18N = {
     'Create tasks': 'Aufgaben erstellen', 'Check the tasks': 'Aufgaben prüfen', 'Keep your tasks on this device?': 'Aufgaben auf diesem Gerät behalten?',
     'Choose "Remove" on a shared computer (e.g. at university). Your tasks stay safe in your Google account either way.': 'Wähle „Entfernen“ an einem fremden Computer (z. B. an der Hochschule). Deine Aufgaben bleiben in jedem Fall in deinem Google-Konto sicher.',
     'Remove from this device': 'Von diesem Gerät entfernen', 'Keep tasks': 'Aufgaben behalten', 'Save this task?': 'Diese Aufgabe speichern?', 'Discard': 'Verwerfen',
-    'New task (press A twice)': 'Neue Aufgabe (zweimal A drücken)', 'New task': 'Neue Aufgabe', 'Undo': 'Rückgängig',
+    'New task (press A twice)': 'Neue Aufgabe (zweimal A drücken)', 'New task': 'Neue Aufgabe', 'New task for {day}… (Enter to add, Esc to close)': 'Neue Aufgabe für {day}… (Enter zum Hinzufügen, Esc zum Schließen)', 'Undo': 'Rückgängig',
   },
 };
 // Language: the person's choice, otherwise the device's language (Vietnamese / German), otherwise English
@@ -1993,7 +1993,7 @@ function taskHtml(t, o = {}) {
 
 function addLineHtml(day, empty) {
   if (inlineDay === day) {
-    return `<li class="inline-add"><input class="inline-input" data-day="${day}" placeholder="New task for ${esc(dayText(day))}… (Enter to add, Esc to close)" autocomplete="off"><div class="inline-chips"></div></li>`;
+    return `<li class="inline-add"><input class="inline-input" data-day="${day}" placeholder="${esc(tr('New task for {day}… (Enter to add, Esc to close)', { day: dayText(day) }))}" autocomplete="off"><div class="inline-chips"></div></li>`;
   }
   return empty
     ? `<li><button class="add-line" data-add="${day}">${icon('plus')}<span class="idle-txt">${tr('No tasks')}</span><span class="hover-txt">${tr('Add task')}</span></button></li>`
@@ -2116,7 +2116,7 @@ function onListClick(e) {
   if (e.target.closest('.del')) return deleteTask(li.dataset.id);
   const more = e.target.closest('.more');
   if (more) { const r = more.getBoundingClientRect(); return openTaskMenu(li.dataset.id, r.right - 210, r.bottom + 4); }
-  if (e.target.closest('.body')) {
+  if (!e.target.closest('button, input, label, a, .sub-wrap')) {
     openSheet(li.dataset.id);
     // Laptop: the cursor is in the title, ready to type (on the phone the keyboard would cover the task)
     const t = !TOUCH.matches && sheetBody.querySelector('.sh-title');
