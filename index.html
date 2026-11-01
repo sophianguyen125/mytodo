@@ -582,6 +582,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .acct-status.s-saving { color: var(--muted); }
 .acct-status.s-offline, .acct-status.s-paused { color: var(--warn); }
 .acct-status.s-error { color: var(--danger); }
+#langPop { width: 200px; }
 .acct-alt { display: block; margin: 10px 2px 0; }
 .acct-status.s-badkey { color: var(--warn); }
 .script-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
@@ -741,7 +742,7 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   <!-- Middle: tasks with a day -->
   <main class="col col-mid">
     <div class="mid-head">
-      <div class="title-row"><h1 id="viewTitle">Tasks</h1><div class="title-btns" id="titleBtns"></div></div>
+      <div class="title-row"><h1 id="viewTitle" data-t>Tasks</h1><div class="title-btns" id="titleBtns"></div></div>
       <div class="subtitle" id="viewSub"></div>
       <div class="tag-bar" id="tagBar"></div>
       <div class="week" id="weekStrip"></div>
@@ -767,11 +768,11 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 
 <!-- Task details panel -->
 <div class="scrim" id="scrim" hidden></div>
-<aside class="sheet" id="sheet" hidden aria-label="Task details">
+<aside class="sheet" id="sheet" hidden aria-label="Task details" data-t-aria-label="Task details">
   <div class="sheet-handle"></div>
   <div class="sheet-top">
-    <button class="ib" data-sh="more" title="More">…</button>
-    <button class="ib" data-sh="close" title="Close (Esc)">×</button>
+    <button class="ib" data-sh="more" title="More" data-t-title="More">…</button>
+    <button class="ib" data-sh="close" title="Close (Esc)" data-t-title="Close (Esc)">×</button>
     <div class="menu more-menu" id="moreMenu" hidden>
       <button data-sh="duplicate" id="mDup"></button>
       <button data-sh="to-inbox" id="mInbox"></button>
@@ -784,70 +785,71 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 
 <!-- Manage categories -->
 <dialog id="catDlg">
-  <h2>Categories</h2>
+  <h2 data-t>Categories</h2>
   <div class="cat-list" id="catList"></div>
   <form class="cat-add" id="catAddForm">
-    <input id="catName" placeholder="New category name" required>
+    <input id="catName" placeholder="New category name" data-t-placeholder="New category name" required>
     <select id="catParent"></select>
-    <button class="btn" type="submit">Add</button>
+    <button class="btn" type="submit" data-t>Add</button>
   </form>
-  <div class="dlg-actions"><span class="spacer"></span><button class="btn ghost" id="catClose">Close</button></div>
+  <div class="dlg-actions"><span class="spacer"></span><button class="btn ghost" id="catClose" data-t>Close</button></div>
 </dialog>
 
 <!-- AI box (free: copy to claude.ai and paste the answer back) -->
 <dialog id="aiDlg" class="wide">
   <h2 id="aiTitle">AI: turn a list into tasks</h2>
-  <div class="step"><span class="n">1</span> Write or paste your list</div>
-  <textarea id="aiList" rows="4" placeholder="e.g. buy milk, finish CRMaM slides by Friday, call mom tomorrow"></textarea>
+  <div class="step"><span class="n">1</span> <span data-t>Write or paste your list</span></div>
+  <textarea id="aiList" rows="4" placeholder="e.g. buy milk, finish CRMaM slides by Friday, call mom tomorrow" data-t-placeholder="e.g. buy milk, finish CRMaM slides by Friday, call mom tomorrow"></textarea>
   <div class="step-actions">
-    <button class="btn" id="aiCopy">Copy &amp; open Claude</button>
-    <span class="note" id="aiCopyNote">Claude opens in a new tab. If the message box is empty, press ⌘V and Enter.</span>
+    <button class="btn" id="aiCopy" data-t>Copy &amp; open Claude</button>
+    <span class="note" id="aiCopyNote" data-t>Claude opens in a new tab. If the message box is empty, press ⌘V and Enter.</span>
   </div>
-  <div class="step"><span class="n">2</span> Paste Claude's answer here</div>
-  <textarea id="aiAnswer" rows="4" placeholder="Copy Claude's whole answer and paste it here"></textarea>
-  <div class="step-actions"><button class="btn ghost" id="aiParse">Create tasks</button></div>
+  <div class="step"><span class="n">2</span> <span data-t>Paste Claude's answer here</span></div>
+  <textarea id="aiAnswer" rows="4" placeholder="Copy Claude's whole answer and paste it here" data-t-placeholder="Copy Claude's whole answer and paste it here"></textarea>
+  <div class="step-actions"><button class="btn ghost" id="aiParse" data-t>Create tasks</button></div>
   <div id="aiStep3" hidden>
-    <div class="step"><span class="n">3</span> Check the tasks</div>
+    <div class="step"><span class="n">3</span> <span data-t>Check the tasks</span></div>
     <ul class="ai-preview" id="aiPreview"></ul>
   </div>
   <div class="dlg-actions">
     <span class="spacer"></span>
-    <button class="btn ghost" id="aiClose">Close</button>
+    <button class="btn ghost" id="aiClose" data-t>Close</button>
     <button class="btn" id="aiAdd" disabled>Add all</button>
   </div>
 </dialog>
 
 <div class="popover" id="acctPop" hidden></div>
 <div class="popover theme-pop" id="themePop" hidden></div>
+<div class="popover theme-pop" id="langPop" hidden></div>
 <dialog id="outDlg">
-  <h2>Sign out</h2>
-  <p>Keep your tasks on this device?</p>
-  <p class="note">Choose "Remove" on a shared computer (e.g. at university). Your tasks stay safe in your Google account either way.</p>
+  <h2 data-t>Sign out</h2>
+  <p data-t>Keep your tasks on this device?</p>
+  <p class="note" data-t>Choose "Remove" on a shared computer (e.g. at university). Your tasks stay safe in your Google account either way.</p>
   <div class="dlg-actions">
-    <button class="btn ghost" id="outCancel">Cancel</button>
+    <button class="btn ghost" id="outCancel" data-t>Cancel</button>
     <span class="spacer"></span>
-    <button class="btn ghost" id="outRemove">Remove from this device</button>
-    <button class="btn" id="outKeep">Keep tasks</button>
+    <button class="btn ghost" id="outRemove" data-t>Remove from this device</button>
+    <button class="btn" id="outKeep" data-t>Keep tasks</button>
   </div>
 </dialog>
 
 <!-- Closing a new task that was not saved with Enter -->
 <dialog id="saveDlg">
-  <h2>Save this task?</h2>
+  <h2 data-t>Save this task?</h2>
   <p class="note" id="saveName"></p>
   <div class="dlg-actions">
-    <button class="btn ghost" id="saveNo">Discard<span class="key">Esc</span></button>
+    <button class="btn ghost" id="saveNo"><span data-t>Discard</span><span class="key">Esc</span></button>
     <span class="spacer"></span>
-    <button class="btn" id="saveYes" autofocus>Save<span class="key">Enter</span></button>
+    <button class="btn" id="saveYes" autofocus><span data-t>Save</span><span class="key">Enter</span></button>
   </div>
 </dialog>
-<button class="fab" id="fab" title="New task (press A twice)" aria-label="New task">
+<button class="fab" id="fab" title="New task (press A twice)" aria-label="New task" data-t-title="New task (press A twice)" data-t-aria-label="New task">
   <svg viewBox="0 0 24 24"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></svg>
 </button>
 
 <input type="file" id="importFile" accept=".json,application/json" hidden>
-<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" hidden>Undo</button></div>
-<div class="gbar" id="gbar" hidden><button id="gbarGo">Google paused – tap to reconnect</button><button id="gbarX" title="Hide" aria-label="Hide">×</button></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" hidden data-t>Undo</button></div>
+<div class="gbar" id="gbar" hidden><button id="gbarGo" data-t>Google paused – tap to reconnect</button><button id="gbarX" title="Hide" aria-label="Hide" data-t-title="Hide" data-t-aria-label="Hide">×</button></div>
 
 <!-- ===== Core logic: dates and shortcut parsing (no page access) ===== -->
 <script id="core">
@@ -1084,6 +1086,205 @@ function aiLines(answer) {
 const STORE_KEY = 'todo-app-data-v1';
 const UI_KEY = 'todo-app-ui-v1';
 const PRI = ['Normal', 'Important', 'Very important', 'Most important'];
+/* ---------- Languages: English (default), Tiếng Việt, Deutsch ---------- */
+// Only Mytodo's own texts change; tasks, notes and category names stay as typed.
+// The lines written to Google Tasks ("Time:", "Priority:", "Deadline:") always stay English.
+const LANGS = { en: 'English', vi: 'Tiếng Việt', de: 'Deutsch' };
+const I18N = {
+  vi: {
+    'Normal': 'Bình thường', 'Important': 'Quan trọng', 'Very important': 'Rất quan trọng', 'Most important': 'Quan trọng nhất',
+    '⚠️ Could not save. Please use Export to back up your tasks.': '⚠️ Không lưu được. Dùng Xuất để sao lưu công việc.',
+    'Auto (follows your device)': 'Tự động (Theo thiết bị)', 'Auto': 'Tự động', 'Light': 'Sáng', 'Dark': 'Tối',
+    'Classic': 'Cổ điển', 'Focus': 'Tập trung', 'Cozy': 'Ấm áp', 'Playful': 'Vui tươi', 'Calm': 'Dịu nhẹ',
+    'Theme: {name}': 'Giao diện: {name}', 'Theme: {name} — Change': 'Giao diện: {name} — Đổi',
+    'Sound: on — Change': 'Âm thanh: bật — Đổi', 'Sound: off — Change': 'Âm thanh: tắt — Đổi',
+    'Sound on': 'Bật', 'Sound off': 'Tắt',
+    'Nothing to undo': 'Không thể hoàn tác', 'Undone': 'Đã hoàn tác', 'Nothing to redo': 'Không thể làm lại', 'Redone': 'Đã làm lại',
+    'Click to use · right-click to edit': 'Bấm để chọn · bấm chuột phải để sửa',
+    'Hide sub-tags': 'Ẩn thẻ con', 'Show sub-tags': 'Hiện thẻ con',
+    'New category name': 'Tên danh mục mới', 'New category': 'Danh mục mới', 'Categories': 'Danh mục',
+    'Done': 'Đã xong', 'Edit categories': 'Sửa danh mục', 'Export': 'Xuất', 'Import': 'Nhập',
+    'Sign in with Google': 'Đăng nhập bằng Google', 'Export (backup)': 'Xuất (sao lưu)', 'Import (restore backup)': 'Nhập (khôi phục bản sao lưu)',
+    'Edit name': 'Sửa tên', 'Change color': 'Đổi màu', 'Delete': 'Xóa', 'Save': 'Lưu',
+    'Category name': 'Tên danh mục', 'Category deleted': 'Đã xóa danh mục',
+    'Delete "{name}"? Tasks are kept, but lose this category.': 'Xóa "{name}"? Các việc vẫn được giữ, nhưng không còn danh mục này.',
+    'Delete "{name}" and its {n} sub-categories? Tasks are kept, but lose this category.': 'Xóa "{name}" và {n} danh mục con? Các việc vẫn được giữ, nhưng không còn danh mục này.',
+    'Overdue · ': 'Quá hạn · ', 'Deadline today': 'Hạn hôm nay', 'Deadline passed · {d}': 'Đã quá hạn · {d}', 'Deadline {d}': 'Hạn {d}',
+    'Has sub-tasks': 'Có việc con', 'Has notes': 'Có ghi chú', 'Mark as done': 'Đánh dấu đã xong',
+    '{n} day ago': '{n} ngày trước', '{n} days ago': '{n} ngày trước',
+    'Hide sub-tasks': 'Ẩn việc con', 'Show sub-tasks': 'Hiện việc con',
+    'More: duplicate, move, delete': 'Thêm: nhân bản, di chuyển, xóa', '+ Add sub-task': '+ Thêm việc con',
+    'No tasks': 'Không có việc', 'Add task': 'Thêm việc', 'Tasks': 'Công việc', 'Pending': 'Quá hạn', 'Later': 'Sau này',
+    'Inbox': 'Hộp chờ', '(no date)': '(chưa có ngày)',
+    'No tasks without a day. Type /nd or drag a task here.': 'Không có việc nào chưa có ngày. Gõ /nd hoặc kéo việc vào đây.',
+    'Added to {where}': 'Đã thêm vào {where}', '✓ Added to {where}': '✓ Đã thêm vào {where}',
+    'Done ✓': 'Đã xong ✓', 'Back to open tasks': 'Đã chuyển về việc chưa xong', 'Task deleted': 'Đã xóa việc',
+    'Moved to {where}': 'Đã chuyển sang {where}', 'Moved to Inbox': 'Đã chuyển vào Hộp chờ',
+    'Add to day': 'Thêm vào ngày', 'Add to day…': 'Thêm vào ngày…', 'Pick a date': 'Chọn ngày',
+    'Task duplicated': 'Đã nhân bản việc', 'Duplicate': 'Nhân bản', 'Move to Inbox': 'Chuyển vào Hộp chờ',
+    'New tag': 'Thẻ mới', 'New sub-tag': 'Thẻ con mới', 'New tag name': 'Tên thẻ mới', 'All': 'Tất cả',
+    'Previous week': 'Tuần trước', 'Next week': 'Tuần sau', 'Today': 'Hôm nay', 'Tomorrow': 'Ngày mai', 'Yesterday': 'Hôm qua',
+    'Do day · {d}': 'Ngày · {d}', 'then a date or day, e.g. deadline 20.11': 'rồi một ngày hoặc thứ, vd. deadline 20.11',
+    'No day → Inbox': 'Không có ngày → Hộp chờ', 'No date → Inbox': 'Không có ngày → Hộp chờ',
+    'Do day tomorrow · {d}': 'Ngày: ngày mai · {d}', 'Deadline, e.g. /dl 20.11': 'Hạn, vd. /dl 20.11',
+    '— None —': '— Không —', 'This week': 'Tuần này', 'Earlier': 'Trước đó',
+    'Untick a task to bring it back.': 'Bỏ đánh dấu để đưa việc trở lại.', 'Nothing done yet': 'Chưa xong việc nào',
+    'Task title': 'Tên việc', 'Turn a list into tasks with AI': 'Biến danh sách thành việc bằng AI',
+    'More details ⌄': 'Thêm chi tiết ⌄', 'Add notes…': 'Thêm ghi chú…', 'Description': 'Mô tả', 'Sub-tasks': 'Việc con',
+    'Do day': 'Ngày', 'Time': 'Giờ', 'Deadline': 'Hạn', 'Category': 'Danh mục', 'Priority': 'Ưu tiên',
+    'Inbox (no date)': 'Hộp chờ (chưa có ngày)', 'Remove time': 'Bỏ giờ', 'Remove deadline': 'Bỏ hạn', '— No category': '— Không có danh mục',
+    'Delete this task?': 'Xóa việc này?', 'Close the AI box? Tasks you have not added yet will be lost.': 'Đóng hộp AI? Những việc chưa thêm sẽ bị mất.',
+    'Top level': 'Cấp cao nhất', 'Add all': 'Thêm tất cả', 'Add all ({n})': 'Thêm tất cả ({n})', 'Remove': 'Bỏ',
+    'No tasks found in this answer': 'Không tìm thấy việc nào trong câu trả lời này', 'Please write your list first': 'Hãy viết danh sách trước',
+    'Copied ✓ Claude opened in a new tab. If the message box is empty, press ⌘V, then Enter.': 'Đã sao chép ✓ Claude đã mở trong tab mới. Nếu ô tin nhắn trống, nhấn ⌘V rồi Enter.',
+    'Claude opened in a new tab. Copying failed, so please copy your list there by hand.': 'Claude đã mở trong tab mới. Không sao chép được, hãy tự chép danh sách sang đó.',
+    'Backup saved to your Downloads folder': 'Đã lưu bản sao lưu vào thư mục Tải về', 'Backup imported': 'Đã nhập bản sao lưu',
+    '⚠️ This file is not a valid backup': '⚠️ Tệp này không phải bản sao lưu hợp lệ',
+    'Import {n} tasks? This replaces your current tasks.': 'Nhập {n} việc? Việc này sẽ thay thế các việc hiện có.',
+    'Settings': 'Cài đặt', 'Theme': 'Giao diện', 'Sound': 'Âm thanh', 'Sound when a task is done': 'Âm thanh khi xong việc',
+    'On': 'Bật', 'Off': 'Tắt', 'Backup': 'Sao lưu', 'Language': 'Ngôn ngữ',
+    'Sign-in works on the online version: sophianguyen125.github.io/mytodo': 'Đăng nhập chỉ dùng được trên bản online: sophianguyen125.github.io/mytodo',
+    'Cannot reach Google. Please check your internet connection.': 'Không kết nối được Google. Hãy kiểm tra mạng.',
+    'Please allow Mytodo to save to your Google Drive': 'Hãy cho phép Mytodo lưu vào Google Drive của bạn',
+    'Signed in ✓ Your tasks are saved in your Google account': 'Đã đăng nhập ✓ Công việc được lưu trong tài khoản Google của bạn',
+    'Sign-in was cancelled': 'Đã hủy đăng nhập',
+    "Please paste the script's web address (it ends with /exec)": 'Hãy dán địa chỉ web của script (kết thúc bằng /exec)',
+    'Please paste your secret key': 'Hãy dán khóa bí mật của bạn',
+    'Cannot reach the script. Please check the address and your internet.': 'Không kết nối được script. Hãy kiểm tra địa chỉ và mạng.',
+    'This key is not right. Please check it.': 'Khóa này không đúng. Hãy kiểm tra lại.', 'The script answered: {x}': 'Script trả lời: {x}',
+    'Connected ✓ Your own script now saves your tasks': 'Đã kết nối ✓ Script của bạn giờ lưu công việc',
+    'Linked ✓ Tasks with a do day now appear in Google Calendar': 'Đã liên kết ✓ Việc có ngày làm sẽ hiện trong Google Calendar',
+    'Calendar link was not allowed': 'Liên kết lịch chưa được cho phép',
+    'Calendar link turned off. Tasks already in Google Calendar stay there.': 'Đã tắt liên kết lịch. Những việc đã có trong Google Calendar vẫn ở đó.',
+    'Signed out. Your tasks stay on this device.': 'Đã đăng xuất. Công việc vẫn ở trên thiết bị này.',
+    'Signed out. Tasks removed from this device.': 'Đã đăng xuất. Đã xóa công việc khỏi thiết bị này.',
+    'Saving…': 'Đang lưu…', 'Offline – will save later': 'Mất mạng – sẽ lưu sau', 'Google problem – trying again': 'Lỗi Google – đang thử lại',
+    'Paused – ': 'Tạm dừng – ', 'Reconnect': 'Kết nối lại', 'Key not accepted – ': 'Khóa không được chấp nhận – ', 'Enter it again': 'Nhập lại',
+    'Saved ✓': 'Đã lưu ✓', 'just now': 'vừa xong', '{n} min ago': '{n} phút trước', '{n} h ago': '{n} giờ trước',
+    'Script web address (…/exec)': 'Địa chỉ web của script (…/exec)', 'Secret key': 'Khóa bí mật', 'Connect': 'Kết nối', 'Cancel': 'Hủy',
+    'Your own Google Apps Script saves your tasks. It never asks you to sign in again.': 'Google Apps Script của riêng bạn lưu công việc. Không bao giờ phải đăng nhập lại.',
+    'Sign in to keep your tasks safe and use them on all your devices.': 'Đăng nhập để giữ công việc an toàn và dùng trên mọi thiết bị.',
+    'Or use your own script (key)': 'Hoặc dùng script của riêng bạn (khóa)', 'Link to Google Calendar': 'Liên kết với Google Calendar', 'Sign out': 'Đăng xuất',
+    'Google paused – tap to reconnect': 'Google tạm dừng – chạm để kết nối lại', 'Hide': 'Ẩn',
+    'Task details': 'Chi tiết việc', 'More': 'Thêm', 'Close (Esc)': 'Đóng (Esc)', 'Add': 'Thêm', 'Close': 'Đóng',
+    'AI: turn a list into tasks': 'AI: biến danh sách thành việc', 'Write or paste your list': 'Viết hoặc dán danh sách của bạn',
+    'e.g. buy milk, finish CRMaM slides by Friday, call mom tomorrow': 'vd. mua sữa, làm xong slide CRMaM trước thứ Sáu, gọi mẹ ngày mai',
+    'Copy & open Claude': 'Sao chép & mở Claude',
+    'Claude opens in a new tab. If the message box is empty, press ⌘V and Enter.': 'Claude mở trong tab mới. Nếu ô tin nhắn trống, nhấn ⌘V rồi Enter.',
+    "Paste Claude's answer here": 'Dán câu trả lời của Claude vào đây', "Copy Claude's whole answer and paste it here": 'Sao chép toàn bộ câu trả lời của Claude và dán vào đây',
+    'Create tasks': 'Tạo việc', 'Check the tasks': 'Kiểm tra các việc', 'Keep your tasks on this device?': 'Giữ công việc trên thiết bị này?',
+    'Choose "Remove" on a shared computer (e.g. at university). Your tasks stay safe in your Google account either way.': 'Chọn "Xóa" nếu dùng máy chung (vd. ở trường). Dù chọn gì, công việc vẫn an toàn trong tài khoản Google của bạn.',
+    'Remove from this device': 'Xóa khỏi thiết bị này', 'Keep tasks': 'Giữ công việc', 'Save this task?': 'Lưu việc này?', 'Discard': 'Bỏ',
+    'New task (press A twice)': 'Việc mới (nhấn A hai lần)', 'New task': 'Việc mới', 'Undo': 'Hoàn tác',
+  },
+  de: {
+    'Normal': 'Normal', 'Important': 'Wichtig', 'Very important': 'Sehr wichtig', 'Most important': 'Am wichtigsten',
+    '⚠️ Could not save. Please use Export to back up your tasks.': '⚠️ Speichern fehlgeschlagen. Bitte sichere deine Aufgaben mit „Exportieren“.',
+    'Auto (follows your device)': 'Automatisch (wie das Gerät)', 'Auto': 'Auto', 'Light': 'Hell', 'Dark': 'Dunkel',
+    'Classic': 'Klassisch', 'Focus': 'Fokus', 'Cozy': 'Gemütlich', 'Playful': 'Verspielt', 'Calm': 'Ruhig',
+    'Theme: {name}': 'Design: {name}', 'Theme: {name} — Change': 'Design: {name} — Ändern',
+    'Sound: on — Change': 'Ton: an — Ändern', 'Sound: off — Change': 'Ton: aus — Ändern',
+    'Sound on': 'Ton an', 'Sound off': 'Ton aus',
+    'Nothing to undo': 'Nichts zum Rückgängigmachen', 'Undone': 'Rückgängig gemacht', 'Nothing to redo': 'Nichts zum Wiederherstellen', 'Redone': 'Wiederhergestellt',
+    'Click to use · right-click to edit': 'Klicken zum Auswählen · Rechtsklick zum Bearbeiten',
+    'Hide sub-tags': 'Untertags ausblenden', 'Show sub-tags': 'Untertags einblenden',
+    'New category name': 'Name der neuen Kategorie', 'New category': 'Neue Kategorie', 'Categories': 'Kategorien',
+    'Done': 'Erledigt', 'Edit categories': 'Kategorien bearbeiten', 'Export': 'Exportieren', 'Import': 'Importieren',
+    'Sign in with Google': 'Mit Google anmelden', 'Export (backup)': 'Exportieren (Sicherung)', 'Import (restore backup)': 'Importieren (Sicherung wiederherstellen)',
+    'Edit name': 'Namen bearbeiten', 'Change color': 'Farbe ändern', 'Delete': 'Löschen', 'Save': 'Speichern',
+    'Category name': 'Kategoriename', 'Category deleted': 'Kategorie gelöscht',
+    'Delete "{name}"? Tasks are kept, but lose this category.': '„{name}“ löschen? Die Aufgaben bleiben, verlieren aber diese Kategorie.',
+    'Delete "{name}" and its {n} sub-categories? Tasks are kept, but lose this category.': '„{name}“ und {n} Unterkategorien löschen? Die Aufgaben bleiben, verlieren aber diese Kategorie.',
+    'Overdue · ': 'Überfällig · ', 'Deadline today': 'Frist heute', 'Deadline passed · {d}': 'Frist abgelaufen · {d}', 'Deadline {d}': 'Frist {d}',
+    'Has sub-tasks': 'Hat Unteraufgaben', 'Has notes': 'Hat Notizen', 'Mark as done': 'Als erledigt markieren',
+    '{n} day ago': 'vor {n} Tag', '{n} days ago': 'vor {n} Tagen',
+    'Hide sub-tasks': 'Unteraufgaben ausblenden', 'Show sub-tasks': 'Unteraufgaben einblenden',
+    'More: duplicate, move, delete': 'Mehr: duplizieren, verschieben, löschen', '+ Add sub-task': '+ Unteraufgabe hinzufügen',
+    'No tasks': 'Keine Aufgaben', 'Add task': 'Aufgabe hinzufügen', 'Tasks': 'Aufgaben', 'Pending': 'Ausstehend', 'Later': 'Später',
+    'Inbox': 'Eingang', '(no date)': '(ohne Datum)',
+    'No tasks without a day. Type /nd or drag a task here.': 'Keine Aufgaben ohne Tag. Tippe /nd oder ziehe eine Aufgabe hierher.',
+    'Added to {where}': 'Hinzugefügt: {where}', '✓ Added to {where}': '✓ Hinzugefügt: {where}',
+    'Done ✓': 'Erledigt ✓', 'Back to open tasks': 'Zurück bei den offenen Aufgaben', 'Task deleted': 'Aufgabe gelöscht',
+    'Moved to {where}': 'Verschoben: {where}', 'Moved to Inbox': 'In den Eingang verschoben',
+    'Add to day': 'Zu einem Tag hinzufügen', 'Add to day…': 'Zu einem Tag hinzufügen…', 'Pick a date': 'Datum wählen',
+    'Task duplicated': 'Aufgabe dupliziert', 'Duplicate': 'Duplizieren', 'Move to Inbox': 'In den Eingang verschieben',
+    'New tag': 'Neuer Tag', 'New sub-tag': 'Neuer Untertag', 'New tag name': 'Name des neuen Tags', 'All': 'Alle',
+    'Previous week': 'Vorherige Woche', 'Next week': 'Nächste Woche', 'Today': 'Heute', 'Tomorrow': 'Morgen', 'Yesterday': 'Gestern',
+    'Do day · {d}': 'Tag · {d}', 'then a date or day, e.g. deadline 20.11': 'dann ein Datum oder Tag, z. B. deadline 20.11',
+    'No day → Inbox': 'Kein Tag → Eingang', 'No date → Inbox': 'Kein Datum → Eingang',
+    'Do day tomorrow · {d}': 'Tag: morgen · {d}', 'Deadline, e.g. /dl 20.11': 'Frist, z. B. /dl 20.11',
+    '— None —': '— Keine —', 'This week': 'Diese Woche', 'Earlier': 'Früher',
+    'Untick a task to bring it back.': 'Haken entfernen, um eine Aufgabe zurückzuholen.', 'Nothing done yet': 'Noch nichts erledigt',
+    'Task title': 'Aufgabentitel', 'Turn a list into tasks with AI': 'Liste mit KI in Aufgaben verwandeln',
+    'More details ⌄': 'Mehr Details ⌄', 'Add notes…': 'Notizen hinzufügen…', 'Description': 'Beschreibung', 'Sub-tasks': 'Unteraufgaben',
+    'Do day': 'Tag', 'Time': 'Uhrzeit', 'Deadline': 'Frist', 'Category': 'Kategorie', 'Priority': 'Priorität',
+    'Inbox (no date)': 'Eingang (ohne Datum)', 'Remove time': 'Uhrzeit entfernen', 'Remove deadline': 'Frist entfernen', '— No category': '— Keine Kategorie',
+    'Delete this task?': 'Diese Aufgabe löschen?', 'Close the AI box? Tasks you have not added yet will be lost.': 'KI-Fenster schließen? Noch nicht hinzugefügte Aufgaben gehen verloren.',
+    'Top level': 'Oberste Ebene', 'Add all': 'Alle hinzufügen', 'Add all ({n})': 'Alle hinzufügen ({n})', 'Remove': 'Entfernen',
+    'No tasks found in this answer': 'Keine Aufgaben in dieser Antwort gefunden', 'Please write your list first': 'Bitte schreibe zuerst deine Liste',
+    'Copied ✓ Claude opened in a new tab. If the message box is empty, press ⌘V, then Enter.': 'Kopiert ✓ Claude wurde in einem neuen Tab geöffnet. Ist das Nachrichtenfeld leer, drücke ⌘V und dann Enter.',
+    'Claude opened in a new tab. Copying failed, so please copy your list there by hand.': 'Claude wurde in einem neuen Tab geöffnet. Kopieren hat nicht geklappt, bitte füge deine Liste dort selbst ein.',
+    'Backup saved to your Downloads folder': 'Sicherung im Download-Ordner gespeichert', 'Backup imported': 'Sicherung importiert',
+    '⚠️ This file is not a valid backup': '⚠️ Diese Datei ist keine gültige Sicherung',
+    'Import {n} tasks? This replaces your current tasks.': '{n} Aufgaben importieren? Das ersetzt deine aktuellen Aufgaben.',
+    'Settings': 'Einstellungen', 'Theme': 'Design', 'Sound': 'Ton', 'Sound when a task is done': 'Ton, wenn eine Aufgabe erledigt ist',
+    'On': 'An', 'Off': 'Aus', 'Backup': 'Sicherung', 'Language': 'Sprache',
+    'Sign-in works on the online version: sophianguyen125.github.io/mytodo': 'Anmelden geht nur in der Online-Version: sophianguyen125.github.io/mytodo',
+    'Cannot reach Google. Please check your internet connection.': 'Google ist nicht erreichbar. Bitte prüfe deine Internetverbindung.',
+    'Please allow Mytodo to save to your Google Drive': 'Bitte erlaube Mytodo, in deinem Google Drive zu speichern',
+    'Signed in ✓ Your tasks are saved in your Google account': 'Angemeldet ✓ Deine Aufgaben werden in deinem Google-Konto gespeichert',
+    'Sign-in was cancelled': 'Anmeldung abgebrochen',
+    "Please paste the script's web address (it ends with /exec)": 'Bitte füge die Webadresse des Skripts ein (endet mit /exec)',
+    'Please paste your secret key': 'Bitte füge deinen geheimen Schlüssel ein',
+    'Cannot reach the script. Please check the address and your internet.': 'Das Skript ist nicht erreichbar. Bitte prüfe die Adresse und dein Internet.',
+    'This key is not right. Please check it.': 'Dieser Schlüssel stimmt nicht. Bitte prüfe ihn.', 'The script answered: {x}': 'Das Skript antwortet: {x}',
+    'Connected ✓ Your own script now saves your tasks': 'Verbunden ✓ Dein eigenes Skript speichert jetzt deine Aufgaben',
+    'Linked ✓ Tasks with a do day now appear in Google Calendar': 'Verknüpft ✓ Aufgaben mit Tag erscheinen jetzt in Google Kalender',
+    'Calendar link was not allowed': 'Kalender-Verknüpfung wurde nicht erlaubt',
+    'Calendar link turned off. Tasks already in Google Calendar stay there.': 'Kalender-Verknüpfung aus. Aufgaben, die schon in Google Kalender sind, bleiben dort.',
+    'Signed out. Your tasks stay on this device.': 'Abgemeldet. Deine Aufgaben bleiben auf diesem Gerät.',
+    'Signed out. Tasks removed from this device.': 'Abgemeldet. Aufgaben von diesem Gerät entfernt.',
+    'Saving…': 'Speichern…', 'Offline – will save later': 'Offline – wird später gespeichert', 'Google problem – trying again': 'Google-Problem – neuer Versuch',
+    'Paused – ': 'Pausiert – ', 'Reconnect': 'Neu verbinden', 'Key not accepted – ': 'Schlüssel nicht akzeptiert – ', 'Enter it again': 'Erneut eingeben',
+    'Saved ✓': 'Gespeichert ✓', 'just now': 'gerade eben', '{n} min ago': 'vor {n} Min.', '{n} h ago': 'vor {n} Std.',
+    'Script web address (…/exec)': 'Webadresse des Skripts (…/exec)', 'Secret key': 'Geheimer Schlüssel', 'Connect': 'Verbinden', 'Cancel': 'Abbrechen',
+    'Your own Google Apps Script saves your tasks. It never asks you to sign in again.': 'Dein eigenes Google Apps Script speichert deine Aufgaben. Es fragt nie wieder nach einer Anmeldung.',
+    'Sign in to keep your tasks safe and use them on all your devices.': 'Melde dich an, um deine Aufgaben zu sichern und auf allen Geräten zu nutzen.',
+    'Or use your own script (key)': 'Oder dein eigenes Skript nutzen (Schlüssel)', 'Link to Google Calendar': 'Mit Google Kalender verknüpfen', 'Sign out': 'Abmelden',
+    'Google paused – tap to reconnect': 'Google pausiert – zum Verbinden tippen', 'Hide': 'Ausblenden',
+    'Task details': 'Aufgabendetails', 'More': 'Mehr', 'Close (Esc)': 'Schließen (Esc)', 'Add': 'Hinzufügen', 'Close': 'Schließen',
+    'AI: turn a list into tasks': 'KI: Liste in Aufgaben verwandeln', 'Write or paste your list': 'Schreibe oder füge deine Liste ein',
+    'e.g. buy milk, finish CRMaM slides by Friday, call mom tomorrow': 'z. B. Milch kaufen, CRMaM-Folien bis Freitag fertig, morgen Mama anrufen',
+    'Copy & open Claude': 'Kopieren & Claude öffnen',
+    'Claude opens in a new tab. If the message box is empty, press ⌘V and Enter.': 'Claude öffnet sich in einem neuen Tab. Ist das Nachrichtenfeld leer, drücke ⌘V und Enter.',
+    "Paste Claude's answer here": 'Füge die Antwort von Claude hier ein', "Copy Claude's whole answer and paste it here": 'Kopiere die ganze Antwort von Claude und füge sie hier ein',
+    'Create tasks': 'Aufgaben erstellen', 'Check the tasks': 'Aufgaben prüfen', 'Keep your tasks on this device?': 'Aufgaben auf diesem Gerät behalten?',
+    'Choose "Remove" on a shared computer (e.g. at university). Your tasks stay safe in your Google account either way.': 'Wähle „Entfernen“ an einem fremden Computer (z. B. an der Hochschule). Deine Aufgaben bleiben in jedem Fall in deinem Google-Konto sicher.',
+    'Remove from this device': 'Von diesem Gerät entfernen', 'Keep tasks': 'Aufgaben behalten', 'Save this task?': 'Diese Aufgabe speichern?', 'Discard': 'Verwerfen',
+    'New task (press A twice)': 'Neue Aufgabe (zweimal A drücken)', 'New task': 'Neue Aufgabe', 'Undo': 'Rückgängig',
+  },
+};
+// Language: the person's choice, otherwise the device's language (Vietnamese / German), otherwise English
+function lang() {
+  try { if (LANGS[ui.lang]) return ui.lang; } catch (e) { /* ui not loaded yet */ }
+  const l = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  return LANGS[l] ? l : 'en';
+}
+// tr('Deadline {d}', { d: '20/11' }) -> "Hạn chót 20/11" in Vietnamese
+function tr(s, vars) {
+  let out = (I18N[lang()] || {})[s] || s;
+  if (vars) out = out.replace(/\{(\w+)\}/g, (m, k) => vars[k] != null ? vars[k] : m);
+  return out;
+}
+const capWord = s => s[0].toUpperCase() + s.slice(1);
+// Day names and dates in the chosen language ("Mon 02/11", "T2 02/11", "Mo 02.11")
+const DAY_SHORT = { vi: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'], de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'] };
+const DAY_LONG = { vi: ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'],
+                   de: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'] };
+const dayShort = k => (DAY_SHORT[lang()] || DAY_LABELS)[fromKey(k).getDay()];
+const dayLong = k => (DAY_LONG[lang()] || DAY_FULL)[fromKey(k).getDay()];
+const fmtD = k => lang() === 'de' ? fmt(k).replace('/', '.') : fmt(k);
+const dateSep = () => lang() === 'de' ? '.' : '/';
 const PALETTE = ['#dbeafe', '#d1fae5', '#fde2cf', '#e9dcfb', '#fef3c7', '#fbdde7',
                  '#cffafe', '#e2f0cb', '#f3e8d8', '#e0e7ff', '#fcd5d5', '#d9f2e6'];
 const $ = s => document.querySelector(s);
@@ -1114,13 +1315,14 @@ const ICON_PATHS = {
   copy: '<path d="M8 2h11a2 2 0 0 1 2 2v12h-2V4H8zM3 7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   palette: '<path fill-rule="evenodd" d="M12 2C6.5 2 2 6.2 2 11.5S6.5 22 12 22c1.2 0 2-.8 2-1.9 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3c2.6 0 4.7-2.1 4.7-4.7C22 6 17.5 2 12 2zM6.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>',
   bell: '<path d="M12 2a6.5 6.5 0 0 1 6.5 6.5v4.2l1.8 3.3H3.7l1.8-3.3V8.5A6.5 6.5 0 0 1 12 2zM9.2 18h5.6a2.8 2.8 0 0 1-5.6 0z"/>',
+  globe: '<path fill-rule="evenodd" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-1.6 2.2A8 8 0 0 0 4.1 11h3.9c.1-2.5.9-4.9 2.4-6.8zm3.2 0c1.5 1.9 2.3 4.3 2.4 6.8h3.9a8 8 0 0 0-6.3-6.8zM14 11c-.1-2.3-.8-4.4-2-6-1.2 1.6-1.9 3.7-2 6zm-4 2c.1 2.3.8 4.4 2 6 1.2-1.6 1.9-3.7 2-6zm-5.9 0a8 8 0 0 0 6.3 6.8C8.9 17.9 8.1 15.5 8 13zm11.9 0c-.1 2.5-.9 4.9-2.4 6.8a8 8 0 0 0 6.3-6.8z"/>',
   link: '<path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0zM13 6.2l1.4-1.4a4.5 4.5 0 0 1 6.4 6.4L18.4 13.6 17 12.2l2.4-2.4a2.5 2.5 0 0 0-3.6-3.6L13.8 8.2zM11 17.8l-1.4 1.4a4.5 4.5 0 0 1-6.4-6.4l2.4-2.4L7 11.8l-2.4 2.4a2.5 2.5 0 0 0 3.6 3.6l1.4-1.4z"/>',
   bellOff: '<path d="M12 2a6.5 6.5 0 0 1 6.5 6.5v4.2l1.8 3.3H3.7l1.8-3.3V8.5A6.5 6.5 0 0 1 12 2zM9.2 18h5.6a2.8 2.8 0 0 1-5.6 0z" opacity=".45"/><path d="M3.3 4.7 4.7 3.3l16 16-1.4 1.4z"/>',
 };
 const ICON_COLORS = {
   sun: 'yellow', moon: 'indigo', auto: 'lavender', tag: 'lavender', inbox: 'blue', calendar: 'teal', alarm: 'orange',
   check: 'green', pencil: 'purple', download: 'bluegrey', upload: 'bluegrey', sparkle: 'yellow', plus: '', trash: '', palette: 'lavender',
-  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'lavender', bell: 'yellow', bellOff: 'bluegrey', link: 'blue',
+  notes: 'bluegrey', list: 'green', flag: 'orange', copy: 'bluegrey', user: 'lavender', bell: 'yellow', bellOff: 'bluegrey', link: 'blue', globe: 'teal',
 };
 function icon(name, color = ICON_COLORS[name]) {
   const style = color ? ` style="color:var(--i-${color})"` : '';
@@ -1160,7 +1362,7 @@ function load() {
 }
 function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
-  catch (e) { toast('⚠️ Could not save. Please use Export to back up your tasks.'); }
+  catch (e) { toast(tr('⚠️ Could not save. Please use Export to back up your tasks.')); }
 }
 function loadUi() {
   const base = { open: {}, theme: 'auto', subOpen: {} };
@@ -1169,7 +1371,7 @@ function loadUi() {
 }
 function saveUi() { try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } catch (e) { /* ignore */ } }
 
-const THEMES = { auto: ['auto', 'Auto (follows your Mac)'], light: ['sun', 'Light'], dark: ['moon', 'Dark'] };
+const THEMES = { auto: ['auto', 'Auto (follows your device)'], light: ['sun', 'Light'], dark: ['moon', 'Dark'] };
 // Colour themes: name and 3 dots for the menus (the colours themselves are in the CSS)
 const COLORS = {
   classic: ['Classic', ['#4f6ef7', '#f7f6f3', '#1f2d5c']],
@@ -1188,17 +1390,17 @@ function applyTheme() {
 function themeChoicesHtml() {
   const mode = THEMES[ui.theme] ? ui.theme : 'auto', color = COLORS[ui.color] ? ui.color : 'classic';
   return `<div class="seg">${['auto', 'light', 'dark'].map(k =>
-      `<button data-act="set-theme" data-v="${k}" class="${mode === k ? 'on' : ''}">${icon(THEMES[k][0])} ${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>` +
+      `<button data-act="set-theme" data-v="${k}" class="${mode === k ? 'on' : ''}">${icon(THEMES[k][0])} ${tr(capWord(k))}</button>`).join('')}</div>` +
     Object.entries(COLORS).map(([k, [name, dots]]) =>
       `<button class="me-row${color === k ? ' on' : ''}" data-act="set-color" data-v="${k}">
-         <span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span>${name}${color === k ? '<b>✓</b>' : ''}</button>`).join('');
+         <span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span>${tr(name)}${color === k ? '<b>✓</b>' : ''}</button>`).join('');
 }
 // Me screen: the theme is one line ("●●● Classic · Dark"); tap it to open or close the choices
 let themeOpen = false;
 function themeSummaryHtml() {
   const mode = THEMES[ui.theme] ? ui.theme : 'auto', [name, dots] = COLORS[ui.color] || COLORS.classic;
   return `<button class="me-row" data-act="theme-toggle" aria-expanded="${themeOpen}">
-    <span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span>${name} · ${mode[0].toUpperCase() + mode.slice(1)}
+    <span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span>${tr(name)} · ${tr(capWord(mode))}
     <b>${themeOpen ? '⌃' : '›'}</b></button>`;
 }
 function openThemePop(btn) {
@@ -1209,12 +1411,50 @@ function openThemePop(btn) {
 }
 function closeThemePop() { $('#themePop').hidden = true; }
 
+/* ---------- Language picker (Settings on the phone, Theme menu on the computer) ---------- */
+function langRowsHtml() {
+  const cur = lang();
+  return Object.entries(LANGS).map(([k, name]) =>
+    `<button class="me-row${cur === k ? ' on' : ''}" data-act="set-lang" data-v="${k}">🌐 ${name}${cur === k ? '<b>✓</b>' : ''}</button>`).join('');
+}
+const langChoicesHtml = () => `<div class="menu-title">${tr('Language')}</div>` + langRowsHtml();
+function openLangPop(btn) {
+  const pop = $('#langPop'), r = btn.getBoundingClientRect();
+  pop.innerHTML = langChoicesHtml(); pop.hidden = false;
+  pop.style.left = Math.max(10, Math.min(r.left, innerWidth - pop.offsetWidth - 10)) + 'px';
+  pop.style.top = Math.min(r.bottom + 6, innerHeight - pop.offsetHeight - 10) + 'px';
+}
+function closeLangPop() { $('#langPop').hidden = true; }
+// Texts that are in the page from the start (dialogs, buttons) and the ones with an icon in front
+function translateStatic() {
+  document.documentElement.lang = lang();
+  document.querySelectorAll('[data-t]').forEach(el => {
+    if (!el.dataset.en) el.dataset.en = el.textContent;
+    el.textContent = tr(el.dataset.en);
+  });
+  for (const a of ['title', 'placeholder', 'aria-label'])
+    document.querySelectorAll(`[data-t-${a}]`).forEach(el => el.setAttribute(a, tr(el.getAttribute('data-t-' + a))));
+  $('#aiTitle').innerHTML = icon('sparkle') + esc(tr('AI: turn a list into tasks'));
+  $('#mDup').innerHTML = icon('copy') + ' ' + esc(tr('Duplicate'));
+  $('#mInbox').innerHTML = icon('inbox') + ' ' + esc(tr('Move to Inbox'));
+  $('#mDel').innerHTML = icon('trash') + ' ' + esc(tr('Delete'));
+  $('#aiAdd').textContent = typeof aiTasks !== 'undefined' && aiTasks.length ? tr('Add all ({n})', { n: aiTasks.length }) : tr('Add all');
+}
+function setLang(v) {
+  ui.lang = v; saveUi();
+  translateStatic();
+  render();
+  if (!$('#langPop').hidden) $('#langPop').innerHTML = langChoicesHtml();
+  renderAcctPop();
+  if (sheetId) refreshSheet();
+}
+
 /* ---------- Sound and haptics when a task is finished ---------- */
-const soundTitle = () => 'Sound: ' + (ui.sound === false ? 'off' : 'on') + ' — click to change';
+const soundTitle = () => tr(ui.sound === false ? 'Sound: off — Change' : 'Sound: on — Change');
 function toggleSound() {
   ui.sound = ui.sound === false;
   saveUi(); renderLeft();
-  toast('Sound ' + (ui.sound ? 'on' : 'off'));
+  toast(tr(ui.sound ? 'Sound on' : 'Sound off'));
   if (ui.sound) playDone();
 }
 // A soft rising "ding-ding", made in the browser (no sound file)
@@ -1291,16 +1531,16 @@ function swapData(snapshot) {
   save(); render(); refreshSheet(); cloudChanged();
 }
 function undo() {
-  if (!undoStack.length) return toast('Nothing to undo');
+  if (!undoStack.length) return toast(tr('Nothing to undo'));
   redoStack.push(JSON.stringify(data));
   swapData(undoStack.pop());
-  toast('Undone');
+  toast(tr('Undone'));
 }
 function redo() {
-  if (!redoStack.length) return toast('Nothing to redo');
+  if (!redoStack.length) return toast(tr('Nothing to redo'));
   undoStack.push(JSON.stringify(data));
   swapData(redoStack.pop());
-  toast('Redone');
+  toast(tr('Redone'));
 }
 // Marks changed tasks/categories with the time of the change, and remembers deletions
 // Categories with the same name and parent are one category. Older versions gave the starting
@@ -1367,15 +1607,15 @@ function orderedCats() {
 }
 function dayText(k) {
   const diff = daysBetween(todayKey(), k);
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Tomorrow';
-  if (diff === -1) return 'Yesterday';
-  return DAY_LABELS[fromKey(k).getDay()] + ' ' + fmt(k);
+  if (diff === 0) return tr('Today');
+  if (diff === 1) return tr('Tomorrow');
+  if (diff === -1) return tr('Yesterday');
+  return dayShort(k) + ' ' + fmtD(k);
 }
 // Day headers: "Today 29/10 · Thursday", "Tomorrow 30/10 · Friday", "31/10 · Saturday"
 function dayLabel(k) {
-  const diff = daysBetween(todayKey(), k), name = DAY_FULL[fromKey(k).getDay()];
-  return (diff === 0 ? 'Today ' : diff === 1 ? 'Tomorrow ' : '') + fmt(k) + ' · ' + name;
+  const diff = daysBetween(todayKey(), k), name = dayLong(k);
+  return (diff === 0 ? tr('Today') + ' ' : diff === 1 ? tr('Tomorrow') + ' ' : '') + fmtD(k) + ' · ' + name;
 }
 // Tasks with a time come first in their day, earliest first
 const byTime = (a, b) => a.time && b.time ? a.time.localeCompare(b.time) : a.time ? -1 : b.time ? 1 : 0;
@@ -1399,9 +1639,9 @@ function tagListHtml() {
   const row = (c, child) => {
     const kids = catChildren(c.id).length, isOpen = !!ui.open[c.id];
     return `<div class="tag-row${child ? ' child' : ''}">
-        <button class="tag${tag === c.id ? ' active' : ''}" data-tag="${c.id}" style="--c:${c.color}" title="Click to use · right-click to edit">
+        <button class="tag${tag === c.id ? ' active' : ''}" data-tag="${c.id}" style="--c:${c.color}" title="${tr('Click to use · right-click to edit')}">
           <span class="sw"></span><span class="name">${esc(c.name)}</span><span class="num">${countFor(c.id) || ''}</span></button>
-        ${kids ? `<button class="tog${isOpen ? ' open' : ''}" data-toggle="${c.id}" title="${isOpen ? 'Hide' : 'Show'} sub-tags">›</button>` : ''}
+        ${kids ? `<button class="tog${isOpen ? ' open' : ''}" data-toggle="${c.id}" title="${tr(isOpen ? 'Hide sub-tags' : 'Show sub-tags')}">›</button>` : ''}
       </div>`;
   };
   let h = '';
@@ -1410,8 +1650,8 @@ function tagListHtml() {
     if (ui.open[top.id]) catChildren(top.id).forEach(ch => { h += row(ch, true); });
   });
   h += addingCat
-    ? `<div class="new-cat"><input class="new-cat-input" placeholder="New category name" aria-label="New category name"></div>`
-    : `<button class="add-line subtle" data-act="new-cat">${icon('plus')} New category</button>`;
+    ? `<div class="new-cat"><input class="new-cat-input" placeholder="${tr('New category name')}" aria-label="${tr('New category name')}"></div>`
+    : `<button class="add-line subtle" data-act="new-cat">${icon('plus')} ${tr('New category')}</button>`;
   return h;
 }
 
@@ -1422,41 +1662,42 @@ function renderLeft() {
   $('#left').innerHTML = `
     <div class="full">
       <div class="brand">${logo('logoFull')}<b>Mytodo</b></div>
-      <div class="section-title">Categories</div>
+      <div class="section-title">${tr('Categories')}</div>
       ${tagListHtml()}
       ${accountHtml()}
       <div class="left-foot">
-        <button data-act="done" class="${doneOpen ? 'active' : ''}">${icon('check')}<span>Done</span>${doneCount || ''}</button>
-        <button data-act="edit-cats">${icon('pencil')}<span>Edit categories</span></button>
+        <button data-act="done" class="${doneOpen ? 'active' : ''}">${icon('check')}<span>${tr('Done')}</span>${doneCount || ''}</button>
+        <button data-act="edit-cats">${icon('pencil')}<span>${tr('Edit categories')}</span></button>
         <div class="row">
-          <button data-act="export">${icon('download')}<span>Export</span></button>
-          <button data-act="import">${icon('upload')}<span>Import</span></button>
+          <button data-act="export">${icon('download')}<span>${tr('Export')}</span></button>
+          <button data-act="import">${icon('upload')}<span>${tr('Import')}</span></button>
         </div>
       </div>
     </div>
     <div class="bar">
       ${logo('logoBar')}
-      <button class="bar-btn${popOpen ? ' open' : ''}" data-act="cat-pop" title="Categories">${icon('tag')}</button>
-      <button class="bar-btn" data-act="theme" title="Theme: ${themeName}">${icon(themeIcon)}</button>
+      <button class="bar-btn${popOpen ? ' open' : ''}" data-act="cat-pop" title="${tr('Categories')}">${icon('tag')}</button>
+      <button class="bar-btn" data-act="theme" title="${tr('Theme: {name}', { name: tr(themeName) })}">${icon(themeIcon)}</button>
       <button class="bar-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
-      <button class="bar-btn" data-act="acct-pop" title="${ui.google ? esc(ui.google.email) : 'Sign in with Google'}">${
+      <button class="bar-btn" data-act="acct-pop" title="${ui.google ? esc(ui.google.email) : tr('Sign in with Google')}">${
         ui.google && ui.google.picture ? `<img src="${esc(ui.google.picture)}" alt="" referrerpolicy="no-referrer">` : icon('user')}</button>
       <span class="spacer"></span>
-      <button class="bar-btn${doneOpen ? ' active' : ''}" data-act="done" title="Done${doneCount ? ' (' + doneCount + ')' : ''}">${icon('check')}</button>
-      <button class="bar-btn" data-act="edit-cats" title="Edit categories">${icon('pencil')}</button>
-      <button class="bar-btn" data-act="export" title="Export (backup)">${icon('download')}</button>
-      <button class="bar-btn" data-act="import" title="Import (restore backup)">${icon('upload')}</button>
+      <button class="bar-btn${doneOpen ? ' active' : ''}" data-act="done" title="${tr('Done')}${doneCount ? ' (' + doneCount + ')' : ''}">${icon('check')}</button>
+      <button class="bar-btn" data-act="edit-cats" title="${tr('Edit categories')}">${icon('pencil')}</button>
+      <button class="bar-btn" data-act="export" title="${tr('Export (backup)')}">${icon('download')}</button>
+      <button class="bar-btn" data-act="import" title="${tr('Import (restore backup)')}">${icon('upload')}</button>
     </div>`;
   if (popOpen) renderCatPop();
   // Laptop: sound and theme buttons on the right of the "Tasks" title (the phone has them on the Me screen)
   $('#titleBtns').innerHTML = `<button class="icon-btn" data-act="sound" title="${soundTitle()}">${icon(ui.sound === false ? 'bellOff' : 'bell')}</button>
-    <button class="icon-btn" data-act="theme" title="Theme: ${themeName} — click to change">${icon(themeIcon)}</button>`;
+    <button class="icon-btn" data-act="theme" title="${tr('Theme: {name} — Change', { name: tr(themeName) })}">${icon(themeIcon)}</button>
+    <button class="icon-btn" data-act="lang-pop" title="${tr('Language')}: ${LANGS[lang()]}">${icon('globe')}</button>`;
   renderScreen();
   if (addingCat) focusVisible('.new-cat-input');
 }
 
 function renderCatPop() {
-  $('#catPop').innerHTML = `<div class="section-title">Categories</div>` + tagListHtml();
+  $('#catPop').innerHTML = `<div class="section-title">${tr('Categories')}</div>` + tagListHtml();
 }
 function openCatPop(btn) {
   const pop = $('#catPop'), r = btn.getBoundingClientRect();
@@ -1510,6 +1751,8 @@ function onTagAreaClick(e) {
     if (!$('#themePop').hidden) $('#themePop').innerHTML = themeChoicesHtml();
     return;
   }
+  if (act === 'set-lang') return setLang(b.dataset.v);
+  if (act === 'lang-pop') return $('#langPop').hidden ? openLangPop(b) : closeLangPop();
   if (act === 'sound') return toggleSound();
   if (act === 'done') return doneOpen ? closeSheet() : openDone();
   if (act === 'edit-cats') return openCats();
@@ -1533,7 +1776,7 @@ function onTagAreaBlur(e) {
     if (addingCat && !document.activeElement.classList.contains('new-cat-input')) { addingCat = false; renderLeft(); }
   }, 150);
 }
-['#left', '#catPop', '#acctPop', '#meScreen', '#themePop', '#titleBtns'].forEach(s => {
+['#left', '#catPop', '#acctPop', '#meScreen', '#themePop', '#langPop', '#titleBtns'].forEach(s => {
   $(s).addEventListener('change', e => { if (e.target.dataset.act === 'calendar') setCalendar(e.target.checked); });
   $(s).addEventListener('click', onTagAreaClick);
   $(s).addEventListener('keydown', onTagAreaKey);
@@ -1548,6 +1791,7 @@ document.addEventListener('mousedown', e => {
   if (!$('#catPop').hidden && !e.target.closest('#catPop, [data-act="cat-pop"], #ctx')) closeCatPop();
   if (!$('#acctPop').hidden && !e.target.closest('#acctPop, [data-act="acct-pop"]')) closeAcctPop();
   if (!$('#themePop').hidden && !e.target.closest('#themePop, [data-act="theme"]')) closeThemePop();
+  if (!$('#langPop').hidden && !e.target.closest('#langPop, [data-act="lang-pop"]')) closeLangPop();
   if (!$('#ctx').hidden && !e.target.closest('#ctx') && Date.now() - menuOpenedAt > 600) closeCtx();
 });
 
@@ -1567,16 +1811,16 @@ function showCtx(mode) {
   const m = $('#ctx');
   if (mode === 'main') {
     m.innerHTML = `<div class="menu-title">${esc(c.name)}</div>
-      <button data-ctx="rename">${icon('pencil')} Edit name</button>
-      <button data-ctx="color">${icon('palette')} Change color</button>
-      <button data-ctx="delete" class="danger">${icon('trash')} Delete</button>`;
+      <button data-ctx="rename">${icon('pencil')} ${tr('Edit name')}</button>
+      <button data-ctx="color">${icon('palette')} ${tr('Change color')}</button>
+      <button data-ctx="delete" class="danger">${icon('trash')} ${tr('Delete')}</button>`;
   } else if (mode === 'rename') {
-    m.innerHTML = `<div class="menu-title">Edit name</div>
-      <input id="ctxName" value="${esc(c.name)}" aria-label="Category name">
-      <button data-ctx="save-name">${icon('check')} Save</button>`;
+    m.innerHTML = `<div class="menu-title">${tr('Edit name')}</div>
+      <input id="ctxName" value="${esc(c.name)}" aria-label="${tr('Category name')}">
+      <button data-ctx="save-name">${icon('check')} ${tr('Save')}</button>`;
     const inp = $('#ctxName'); inp.focus(); inp.select();
   } else if (mode === 'color') {
-    m.innerHTML = `<div class="menu-title">Change color</div><div class="pal">${PALETTE.map(p =>
+    m.innerHTML = `<div class="menu-title">${tr('Change color')}</div><div class="pal">${PALETTE.map(p =>
       `<button class="swatch${p === c.color ? ' on' : ''}" data-ctx="pick" data-color="${p}" style="--c:${p}" title="${p}"></button>`).join('')}</div>`;
   }
 }
@@ -1593,14 +1837,14 @@ function deleteCategory(id) {
   const c = catById(id); if (!c) return;
   const ids = catWithChildren(id);
   const msg = ids.length > 1
-    ? `Delete "${c.name}" and its ${ids.length - 1} sub-categories? Tasks are kept, but lose this category.`
-    : `Delete "${c.name}"? Tasks are kept, but lose this category.`;
+    ? tr('Delete "{name}" and its {n} sub-categories? Tasks are kept, but lose this category.', { name: c.name, n: ids.length - 1 })
+    : tr('Delete "{name}"? Tasks are kept, but lose this category.', { name: c.name });
   if (!confirm(msg)) return false;
   change(() => {
     data.categories = data.categories.filter(x => !ids.includes(x.id));
     data.tasks.forEach(t => { if (ids.includes(t.category)) t.category = null; });
   });
-  toast('Category deleted', true);
+  toast(tr('Category deleted'), true);
   return true;
 }
 $('#ctx').addEventListener('click', e => {
@@ -1624,17 +1868,17 @@ function taskChips(t, showDay) {
   if (t.priority) chips.push(`<span class="chip p${t.priority}">${'!'.repeat(t.priority)} ${PRI[t.priority]}</span>`);
   if (showDay) {
     chips.push(t.doDay
-      ? `<span class="chip${overdue ? ' bad' : ''}">${icon('calendar')} ${overdue ? 'Overdue · ' : ''}${dayText(t.doDay)}</span>`
-      : `<span class="chip">${icon('inbox')} Inbox</span>`);
+      ? `<span class="chip${overdue ? ' bad' : ''}">${icon('calendar')} ${overdue ? tr('Overdue · ') : ''}${dayText(t.doDay)}</span>`
+      : `<span class="chip">${icon('inbox')} ${tr('Inbox')}</span>`);
   }
   if (t.deadline) {
     const left = daysBetween(T, t.deadline);
     const cls = t.done ? '' : left <= 0 ? ' bad' : left <= 2 ? ' warn' : '';
-    const label = left === 0 ? 'Deadline today' : left < 0 && !t.done ? `Deadline passed · ${fmt(t.deadline)}` : `Deadline ${fmt(t.deadline)}`;
+    const label = left === 0 ? tr('Deadline today') : left < 0 && !t.done ? tr('Deadline passed · {d}', { d: fmtD(t.deadline) }) : tr('Deadline {d}', { d: fmtD(t.deadline) });
     chips.push(`<span class="chip${cls}">${icon('alarm')} ${label}</span>`);
   }
-  if ((t.subtasks || []).length) chips.push(`<span class="chip" title="Has sub-tasks">${icon('list')}</span>`);
-  if ((t.description || '').trim()) chips.push(`<span class="chip" title="Has notes">${icon('notes')}</span>`);
+  if ((t.subtasks || []).length) chips.push(`<span class="chip" title="${tr('Has sub-tasks')}">${icon('list')}</span>`);
+  if ((t.description || '').trim()) chips.push(`<span class="chip" title="${tr('Has notes')}">${icon('notes')}</span>`);
   const c = t.category && catById(t.category);
   if (c) chips.push(`<span class="chip cat" style="--c:${c.color}"># ${esc(catPath(c.id))}</span>`);
   return chips.join('');
@@ -1643,26 +1887,26 @@ function taskChips(t, showDay) {
 function taskHtml(t, o = {}) {
   const T = todayKey(), overdue = !t.done && t.doDay && t.doDay < T;
   const subs = t.subtasks || [], open = subs.length && ui.subOpen[t.id];
-  const check = `<input type="checkbox" class="check" ${t.done ? 'checked' : ''} title="Mark as done">`;
+  const check = `<input type="checkbox" class="check" ${t.done ? 'checked' : ''} title="${tr('Mark as done')}">`;
   // Green ring around the tick circle shows how many sub-tasks are done
   const pct = subs.length ? Math.round(subs.filter(s => s.done).length / subs.length * 100) : 0;
   let late = '';
   if (o.pending && t.doDay) {
     const n = daysBetween(t.doDay, T);
-    late = `<div class="late">${DAY_LABELS[fromKey(t.doDay).getDay()]} ${fmt(t.doDay)} · ${n} day${n > 1 ? 's' : ''} ago</div>`;
+    late = `<div class="late">${dayShort(t.doDay)} ${fmtD(t.doDay)} · ${tr(n > 1 ? '{n} days ago' : '{n} day ago', { n })}</div>`;
   }
   let h = `<li class="task${t.priority ? ' pr' + t.priority : ''}${t.done ? ' done' : ''}${overdue ? ' is-overdue' : ''}" data-id="${t.id}" draggable="${!t.done && !TOUCH.matches}">
       ${subs.length ? `<span class="ring" style="--p:${pct}">${check}${TICK}</span>` : `<span class="tick-wrap">${check}${TICK}</span>`}
       <div class="body"><div class="title">${esc(t.text)}</div>${late}<div class="meta">${taskChips(t, o.showDay)}</div></div>
-      ${subs.length ? `<button class="tog-sub${open ? ' open' : ''}" title="${open ? 'Hide' : 'Show'} sub-tasks">›</button>` : ''}
-      ${t.done ? '' : '<button class="more" title="More: duplicate, move, delete">···</button>'}
-      <button class="del" title="Delete">×</button></li>`;
+      ${subs.length ? `<button class="tog-sub${open ? ' open' : ''}" title="${tr(open ? 'Hide sub-tasks' : 'Show sub-tasks')}">›</button>` : ''}
+      ${t.done ? '' : `<button class="more" title="${tr('More: duplicate, move, delete')}">···</button>`}
+      <button class="del" title="${tr('Delete')}">×</button></li>`;
   if (open) {
     const ordered = [...subs.filter(s => !s.done), ...subs.filter(s => s.done)];
     h += `<li class="sub-wrap" data-tid="${t.id}">${ordered.map(s =>
         `<div class="sub-line${s.done ? ' done' : ''}" data-sid="${s.id}">
-           <input type="checkbox" class="check sub-check" ${s.done ? 'checked' : ''} title="Done"><span>${esc(s.text)}</span></div>`).join('')}
-        <input class="sub-inline-new" data-tid="${t.id}" placeholder="+ Add sub-task" autocomplete="off"></li>`;
+           <input type="checkbox" class="check sub-check" ${s.done ? 'checked' : ''} title="${tr('Done')}"><span>${esc(s.text)}</span></div>`).join('')}
+        <input class="sub-inline-new" data-tid="${t.id}" placeholder="${tr('+ Add sub-task')}" autocomplete="off"></li>`;
   }
   return h;
 }
@@ -1672,16 +1916,16 @@ function addLineHtml(day, empty) {
     return `<li class="inline-add"><input class="inline-input" data-day="${day}" placeholder="New task for ${esc(dayText(day))}… (Enter to add, Esc to close)" autocomplete="off"><div class="inline-chips"></div></li>`;
   }
   return empty
-    ? `<li><button class="add-line" data-add="${day}">${icon('plus')}<span class="idle-txt">No tasks</span><span class="hover-txt">Add task</span></button></li>`
-    : `<li><button class="add-line subtle" data-add="${day}">${icon('plus')} Add task</button></li>`;
+    ? `<li><button class="add-line" data-add="${day}">${icon('plus')}<span class="idle-txt">${tr('No tasks')}</span><span class="hover-txt">${tr('Add task')}</span></button></li>`
+    : `<li><button class="add-line subtle" data-add="${day}">${icon('plus')} ${tr('Add task')}</button></li>`;
 }
 
 function group(title, tasks, o = {}) {
   let items = tasks.map(t => taskHtml(t, o)).join('');
   if (o.addDay) items += addLineHtml(o.addDay, !tasks.length);
-  else if (!tasks.length) items = `<li class="empty">${o.empty || 'No tasks'}</li>`;
+  else if (!tasks.length) items = `<li class="empty">${tr(o.empty || 'No tasks')}</li>`;
   return `<section class="group${o.cls ? ' ' + o.cls : ''}"${o.drop ? ` data-drop="${o.drop}"` : ''}${o.day ? ` data-day="${o.day}"` : ''}>
-    ${title ? `<h3>${title}${o.pending ? ` <span class="count">${tasks.length}</span>` : ''}</h3>` : ''}
+    ${title ? `<h3>${tr(title)}${o.pending ? ` <span class="count">${tasks.length}</span>` : ''}</h3>` : ''}
     <ul class="tasks">${items}</ul>
   </section>`;
 }
@@ -1691,8 +1935,8 @@ function renderMiddle() {
   const tag = activeTag();
   let html = '';
   {
-    $('#viewTitle').textContent = tag ? '# ' + catPath(tag) : 'Tasks';
-    $('#viewSub').textContent = DAY_FULL[fromKey(T).getDay()] + ', ' + fmt(T) + '/' + fromKey(T).getFullYear();
+    $('#viewTitle').textContent = tag ? '# ' + catPath(tag) : tr('Tasks');
+    $('#viewSub').textContent = dayLong(T) + ', ' + fmtD(T) + dateSep() + fromKey(T).getFullYear();
     const over = open.filter(t => t.doDay && t.doDay < T).sort(byDayThenPriority);
     if (over.length) html += group('Pending', over, { pending: true, cls: 'pending' });
     // Every day from today until the Sunday of the week shown in the week strip; after that, "Later"
@@ -1710,7 +1954,7 @@ function renderMiddle() {
 
 function renderInbox() {
   const inbox = visibleTasks().filter(t => !t.done && !t.doDay).sort(byPriority);
-  $('#inbox').innerHTML = `<div class="head">${icon('inbox')}<b>Inbox</b><span class="sub-note">(no date)</span></div>` +
+  $('#inbox').innerHTML = `<div class="head">${icon('inbox')}<b>${tr('Inbox')}</b><span class="sub-note">${tr('(no date)')}</span></div>` +
     group('', inbox, { drop: 'inbox', empty: 'No tasks without a day. Type /nd or drag a task here.' });
 }
 
@@ -1718,7 +1962,7 @@ function render() { renderLeft(); renderTagBar(); renderWeek(); renderMiddle(); 
 
 /* ---------- Task actions ---------- */
 const findTask = id => data.tasks.find(t => t.id === id) || (draft && draft.id === id ? draft : undefined);
-const whereText = t => !t.doDay ? 'Inbox' : dayText(t.doDay);
+const whereText = t => !t.doDay ? tr('Inbox') : dayText(t.doDay);
 const newTask = p => ({ id: uid(), text: p.text, doDay: p.doDay, deadline: p.deadline, priority: p.priority,
                         category: p.category, done: false, createdAt: Date.now(), doneAt: null, ...(p.time ? { time: p.time } : {}) });
 
@@ -1727,9 +1971,9 @@ const newTask = p => ({ id: uid(), text: p.text, doDay: p.doDay, deadline: p.dea
 function showInlineLabels(el) {
   const s = labelFields(titleLabels(el.value, false)), c = s.category && catById(s.category);
   el.nextElementSibling.innerHTML = [
-    'doDay' in s && `<span class="chip">${s.doDay ? icon('calendar') + ' ' + dayText(s.doDay) : icon('inbox') + ' Inbox'}</span>`,
+    'doDay' in s && `<span class="chip">${s.doDay ? icon('calendar') + ' ' + dayText(s.doDay) : icon('inbox') + ' ' + tr('Inbox')}</span>`,
     s.time && `<span class="chip time">${s.time}</span>`,
-    s.deadline && `<span class="chip warn">${icon('alarm')} Deadline ${fmt(s.deadline)}</span>`,
+    s.deadline && `<span class="chip warn">${icon('alarm')} ${tr('Deadline {d}', { d: fmtD(s.deadline) })}</span>`,
     s.priority && `<span class="chip p${s.priority}">${'!'.repeat(s.priority)} ${PRI[s.priority]}</span>`,
     c && `<span class="chip cat" style="--c:${c.color}"># ${esc(catPath(c.id))}</span>`,
   ].filter(Boolean).join('');
@@ -1741,7 +1985,7 @@ function addInline(el) {
   if (!p.category) p.category = activeTag();
   const t = newTask(p);
   change(() => data.tasks.push(t));
-  toast('Added to ' + whereText(t), true);
+  toast(tr('Added to {where}', { where: whereText(t) }), true);
 }
 
 function toggleDone(id, done) {
@@ -1749,12 +1993,12 @@ function toggleDone(id, done) {
     const t = findTask(id); if (!t) return;
     t.done = done; t.doneAt = done ? Date.now() : null;
   });
-  toast(done ? 'Done ✓' : 'Back to open tasks', true);
+  toast(tr(done ? 'Done ✓' : 'Back to open tasks'), true);
 }
 
 function deleteTask(id) {
   change(() => { data.tasks = data.tasks.filter(t => t.id !== id); });
-  toast('Task deleted', true);
+  toast(tr('Task deleted'), true);
 }
 
 function moveTask(id, target) {
@@ -1762,7 +2006,7 @@ function moveTask(id, target) {
   const day = target === 'inbox' ? null : target === 'today' ? todayKey() : target;
   if (t.doDay === day) return;
   change(() => { findTask(id).doDay = day; });
-  toast('Moved to ' + whereText(findTask(id)), true);
+  toast(tr('Moved to {where}', { where: whereText(findTask(id)) }), true);
 }
 
 function onListChange(e) {
@@ -1847,15 +2091,15 @@ function placeMenu() {
 function showTaskMenu(mode) {
   const t = findTask(menuTask);
   $('#ctx').innerHTML = mode === 'day'
-    ? `<div class="menu-title">Add to day</div>
-       <button data-tm="today">${icon('calendar')} Today</button>
-       <button data-tm="tomorrow">${icon('calendar')} Tomorrow</button>
-       <div class="menu-title">Pick a date</div>
-       <input type="date" class="menu-date" data-tm="pick" aria-label="Pick a date">`
-    : `<button data-tm="duplicate">${icon('copy')} Duplicate</button>
-       ${t.doDay ? `<button data-tm="inbox">${icon('inbox')} Move to Inbox</button>`
-                 : `<button data-tm="day">${icon('calendar')} Add to day…</button>`}
-       <button data-tm="delete" class="danger">${icon('trash')} Delete</button>`;
+    ? `<div class="menu-title">${tr('Add to day')}</div>
+       <button data-tm="today">${icon('calendar')} ${tr('Today')}</button>
+       <button data-tm="tomorrow">${icon('calendar')} ${tr('Tomorrow')}</button>
+       <div class="menu-title">${tr('Pick a date')}</div>
+       <input type="date" class="menu-date" data-tm="pick" aria-label="${tr('Pick a date')}">`
+    : `<button data-tm="duplicate">${icon('copy')} ${tr('Duplicate')}</button>
+       ${t.doDay ? `<button data-tm="inbox">${icon('inbox')} ${tr('Move to Inbox')}</button>`
+                 : `<button data-tm="day">${icon('calendar')} ${tr('Add to day…')}</button>`}
+       <button data-tm="delete" class="danger">${icon('trash')} ${tr('Delete')}</button>`;
 }
 // An exact copy: same title, day, tag, deadline, priority, description and sub-tasks
 function duplicateTask(id) {
@@ -1863,7 +2107,7 @@ function duplicateTask(id) {
   const copy = { ...t, id: uid(), createdAt: Date.now() };
   if (t.subtasks) copy.subtasks = t.subtasks.map(s => ({ ...s, id: uid() }));
   change(() => data.tasks.splice(data.tasks.indexOf(findTask(id)) + 1, 0, copy));
-  toast('Task duplicated', true);
+  toast(tr('Task duplicated'), true);
 }
 $('#ctx').addEventListener('click', e => {
   const b = e.target.closest('button[data-tm]'); if (!b) return;
@@ -2046,8 +2290,8 @@ function highlightTitle(el, hits) {
 
 /* ---------- Tag row above the tasks ---------- */
 function previewChips(p) {
-  const chips = [`<span class="chip">${p.doDay ? icon('calendar') + ' ' + dayText(p.doDay) : icon('inbox') + ' Inbox'}</span>`];
-  if (p.deadline) chips.push(`<span class="chip warn">${icon('alarm')} Deadline ${fmt(p.deadline)}</span>`);
+  const chips = [`<span class="chip">${p.doDay ? icon('calendar') + ' ' + dayText(p.doDay) : icon('inbox') + ' ' + tr('Inbox')}</span>`];
+  if (p.deadline) chips.push(`<span class="chip warn">${icon('alarm')} ${tr('Deadline {d}', { d: fmtD(p.deadline) })}</span>`);
   if (p.priority) chips.push(`<span class="chip p${p.priority}">${'!'.repeat(p.priority)} ${PRI[p.priority]}</span>`);
   const c = p.category && catById(p.category);
   if (c) chips.push(`<span class="chip cat" style="--c:${c.color}"># ${esc(catPath(c.id))}</span>`);
@@ -2060,9 +2304,9 @@ function renderTagBar() {
   const tag = activeTag(), sel = tag && catById(tag), top = sel ? (sel.parent || sel.id) : null;
   const chip = (c, on) => `<button class="tchip${on ? ' on' : ''}" data-filter="${c.id}" style="--c:${c.color}">${esc(c.name)}</button>`;
   const plus = where => tagAdding === where
-    ? `<input class="tchip-input" data-where="${where}" placeholder="${where === 'top' ? 'New tag' : 'New sub-tag'}" aria-label="New tag name">`
-    : `<button class="tchip add" data-newtag="${where}" title="${where === 'top' ? 'New tag' : 'New sub-tag'}">+</button>`;
-  let h = `<div class="trow${tag ? ' has-sel' : ''}"><button class="tchip all${tag ? '' : ' on'}" data-filter="">All</button>` +
+    ? `<input class="tchip-input" data-where="${where}" placeholder="${tr(where === 'top' ? 'New tag' : 'New sub-tag')}" aria-label="${tr('New tag name')}">`
+    : `<button class="tchip add" data-newtag="${where}" title="${tr(where === 'top' ? 'New tag' : 'New sub-tag')}">+</button>`;
+  let h = `<div class="trow${tag ? ' has-sel' : ''}"><button class="tchip all${tag ? '' : ' on'}" data-filter="">${tr('All')}</button>` +
     data.categories.filter(c => !c.parent).map(c => chip(c, c.id === top)).join('') + plus('top') + '</div>';
   const kids = top ? catChildren(top) : [];
   if (kids.length) h += `<div class="trow sub${sel.parent ? ' has-sel' : ''}">${kids.map(c => chip(c, c.id === tag)).join('')}${plus(top)}</div>`;
@@ -2123,13 +2367,13 @@ function renderWeek(from) {
     const n = Math.min(3, open.filter(t => t.doDay === k).length), dl = open.some(t => t.deadline === k);
     const past = k < T;
     return `<button class="wd${k === T ? ' today' : ''}${past ? ' past' : ''}" data-wday="${k}"${past ? '' : ` data-drop="${k === T ? 'today' : k}"`}>
-      <span class="wn">${DAY_LABELS[fromKey(k).getDay()].slice(0, 2)}</span><span class="wdate">${fromKey(k).getDate()}</span>
+      <span class="wn">${dayShort(k).slice(0, 2)}</span><span class="wdate">${fromKey(k).getDate()}</span>
       <span class="wdots">${'<i></i>'.repeat(n)}${dl ? '<i class="dl"></i>' : ''}</span></button>`;
   }).join('');
-  $('#weekStrip').innerHTML = `<button class="warrow" data-week="-1" title="Previous week"${stripWeek ? '' : ' disabled'}>‹</button>
+  $('#weekStrip').innerHTML = `<button class="warrow" data-week="-1" title="${tr('Previous week')}"${stripWeek ? '' : ' disabled'}>‹</button>
     <div class="week-days${from ? ' from-' + from : ''}">${days}</div>
-    <button class="warrow" data-week="1" title="Next week">›</button>
-    ${stripWeek ? '<button class="wtoday" data-week="0">Today</button>' : ''}`;
+    <button class="warrow" data-week="1" title="${tr('Next week')}">›</button>
+    ${stripWeek ? `<button class="wtoday" data-week="0">${tr('Today')}</button>` : ''}`;
 }
 function setWeek(w) {
   w = Math.max(0, w);
@@ -2193,13 +2437,13 @@ function wordSuggestions(q) {
   const T = todayKey();
   const words = [
     ...orderedCats().map(c => ({ ins: c.name, label: c.name, desc: '# ' + catPath(c.id), color: c.color })),
-    { ins: 'today', label: 'today', desc: 'Do day · ' + dayText(T) },
-    { ins: 'tomorrow', label: 'tomorrow', desc: 'Do day · ' + dayText(addDays(T, 1)) },
-    ...FULL_DAYS.map((d, i) => ({ ins: d, label: d, desc: 'Do day · ' + dayText(parseDate(DAY_NAMES[i], T)) })),
-    { ins: 'weekend', label: 'weekend', desc: 'Do day · ' + dayText(parseDate('sat', T)) },
-    { ins: 'next week', label: 'next week', desc: 'Do day · ' + dayText(parseDate('mon', T)) },
-    { ins: 'deadline ', label: 'deadline', desc: 'then a date or day, e.g. deadline 20.11' },
-    { ins: 'inbox', label: 'inbox', desc: 'No day → Inbox' },
+    { ins: 'today', label: 'today', desc: tr('Do day · {d}', { d: dayText(T) }) },
+    { ins: 'tomorrow', label: 'tomorrow', desc: tr('Do day · {d}', { d: dayText(addDays(T, 1)) }) },
+    ...FULL_DAYS.map((d, i) => ({ ins: d, label: d, desc: tr('Do day · {d}', { d: dayText(parseDate(DAY_NAMES[i], T)) }) })),
+    { ins: 'weekend', label: 'weekend', desc: tr('Do day · {d}', { d: dayText(parseDate('sat', T)) }) },
+    { ins: 'next week', label: 'next week', desc: tr('Do day · {d}', { d: dayText(parseDate('mon', T)) }) },
+    { ins: 'deadline ', label: 'deadline', desc: tr('then a date or day, e.g. deadline 20.11') },
+    { ins: 'inbox', label: 'inbox', desc: tr('No day → Inbox') },
   ];
   return words.filter(s => s.label.toLowerCase().startsWith(q) && s.label.toLowerCase() !== q);
 }
@@ -2207,12 +2451,12 @@ function wordSuggestions(q) {
 function buildSuggestions(q) {
   const T = todayKey();
   const date = parseDate(q, T);
-  if (q && /\d/.test(q) && date) return [{ ins: '/' + q, label: '/' + q, desc: 'Do day · ' + dayText(date) }];
+  if (q && /\d/.test(q) && date) return [{ ins: '/' + q, label: '/' + q, desc: tr('Do day · {d}', { d: dayText(date) }) }];
   const cmds = [
-    { ins: '/nd', label: '/nd', desc: 'No date → Inbox' },
-    { ins: '/tmr', label: '/tmr', desc: 'Do day tomorrow · ' + fmt(addDays(T, 1)) },
-    ...DAY_NAMES.map(d => ({ ins: '/' + d, label: '/' + d, desc: 'Do day · ' + dayText(parseDate(d, T)) })),
-    { ins: '/dl ', label: '/dl', desc: 'Deadline, e.g. /dl 20.11' },
+    { ins: '/nd', label: '/nd', desc: tr('No date → Inbox') },
+    { ins: '/tmr', label: '/tmr', desc: tr('Do day tomorrow · {d}', { d: fmtD(addDays(T, 1)) }) },
+    ...DAY_NAMES.map(d => ({ ins: '/' + d, label: '/' + d, desc: tr('Do day · {d}', { d: dayText(parseDate(d, T)) }) })),
+    { ins: '/dl ', label: '/dl', desc: tr('Deadline, e.g. /dl 20.11') },
   ];
   const cats = orderedCats().map(c => ({ ins: '/' + slug(c.name), label: '/' + slug(c.name), desc: '# ' + catPath(c.id), color: c.color }));
   const nq = norm(q);
@@ -2292,7 +2536,7 @@ let textTimer = null, pendingKey = null, pendingFn = null;
 let subDragId = null;
 
 function categoryOptions(selected) {
-  return '<option value="">— None —</option>' + orderedCats().map(c =>
+  return `<option value="">${tr('— None —')}</option>` + orderedCats().map(c =>
     `<option value="${c.id}"${c.id === selected ? ' selected' : ''}>${c.parent ? '   ' : ''}${esc(c.name)}</option>`).join('');
 }
 
@@ -2365,7 +2609,7 @@ function commitDraft(d) {
   if (d.description.trim()) t.description = d.description;
   if (d.subtasks.length) t.subtasks = d.subtasks;
   change(() => data.tasks.push(t));
-  toast('Added to ' + whereText(t), true);
+  toast(tr('Added to {where}', { where: whereText(t) }), true);
   return t;
 }
 
@@ -2450,12 +2694,12 @@ function doneHtml() {
   const groups = {};
   done.forEach(t => (groups[when(t)] = groups[when(t)] || []).push(t));
   const c = tag && catById(tag);
-  return `<div class="done-head">${icon('check')}<h2>Done</h2>
+  return `<div class="done-head">${icon('check')}<h2>${tr('Done')}</h2>
       ${c ? `<span class="chip cat" style="--c:${c.color}"># ${esc(catPath(c.id))}</span>` : ''}</div>
-    <p class="muted">Untick a task to bring it back.</p>` +
+    <p class="muted">${tr('Untick a task to bring it back.')}</p>` +
     (done.length
       ? ['Today', 'Yesterday', 'This week', 'Earlier'].filter(g => groups[g]).map(g => group(g, groups[g], { showDay: true })).join('')
-      : '<p class="empty">Nothing done yet</p>');
+      : `<p class="empty">${tr('Nothing done yet')}</p>`);
 }
 function renderDone() { sheetBody.innerHTML = doneHtml(); }
 
@@ -2474,26 +2718,26 @@ function renderSheet() {
   sheetBody.innerHTML = `
     <div class="sh-card">
       <div class="sh-title-row">
-        ${isDraft() ? '' : `<input type="checkbox" class="check sh-check" ${t.done ? 'checked' : ''} title="Mark as done">`}
-        <div class="sh-title-wrap"><div class="sh-title-hl" aria-hidden="true"></div><textarea class="sh-title" rows="1" data-f="text" aria-label="Task title"${isDraft()
-          ? ' placeholder="Add task" enterkeyhint="done"' : ''}>${esc(isDraft() ? t.text : plainAll(t.text))}</textarea></div>
-        ${isDraft() ? `<button class="sh-ai" data-act="ai" title="Turn a list into tasks with AI">${icon('sparkle')}</button>` : ''}
+        ${isDraft() ? '' : `<input type="checkbox" class="check sh-check" ${t.done ? 'checked' : ''} title="${tr('Mark as done')}">`}
+        <div class="sh-title-wrap"><div class="sh-title-hl" aria-hidden="true"></div><textarea class="sh-title" rows="1" data-f="text" aria-label="${tr('Task title')}"${isDraft()
+          ? ` placeholder="${tr('Add task')}" enterkeyhint="done"` : ''}>${esc(isDraft() ? t.text : plainAll(t.text))}</textarea></div>
+        ${isDraft() ? `<button class="sh-ai" data-act="ai" title="${tr('Turn a list into tasks with AI')}">${icon('sparkle')}</button>` : ''}
       </div>
       ${isDraft() && draftNote ? `<div class="sh-added">${esc(draftNote)}</div>` : ''}
       ${propsHtml(t)}
     </div>
-    ${compact ? '<button class="link-btn more-details" data-act="details">More details ⌄</button>' : `
-    <div class="sh-section">${icon('notes')} Description</div>
-    <textarea class="sh-desc" data-f="description" placeholder="Add notes…">${esc(t.description || '')}</textarea>
+    ${compact ? `<button class="link-btn more-details" data-act="details">${tr('More details ⌄')}</button>` : `
+    <div class="sh-section">${icon('notes')} ${tr('Description')}</div>
+    <textarea class="sh-desc" data-f="description" placeholder="${tr('Add notes…')}">${esc(t.description || '')}</textarea>
     <div class="desc-links">${linkButtons(t.description)}</div>
-    <div class="sh-section">${icon('list')} Sub-tasks
+    <div class="sh-section">${icon('list')} ${tr('Sub-tasks')}
       ${subs.length ? `<span class="count${doneN === subs.length ? ' all' : ''}">${doneN}/${subs.length}</span>` : ''}</div>
     <ul class="subs">${ordered.map(s =>
       `<li class="sub${s.done ? ' done' : ''}" data-sid="${s.id}" draggable="${!s.done}">
-         <input type="checkbox" class="check" ${s.done ? 'checked' : ''} title="Done">
+         <input type="checkbox" class="check" ${s.done ? 'checked' : ''} title="${tr('Done')}">
          <input class="sub-text" value="${esc(s.text)}" aria-label="Sub-task">
-         <button class="x" title="Delete">×</button></li>`).join('')}
-      <li><input class="sub-new" placeholder="+ Add sub-task" autocomplete="off"></li>
+         <button class="x" title="${tr('Delete')}">×</button></li>`).join('')}
+      <li><input class="sub-new" placeholder="${tr('+ Add sub-task')}" autocomplete="off"></li>
     </ul>`}`;
   sheetBody.querySelectorAll('textarea').forEach(autoGrow);
   const ttl = sheetBody.querySelector('.sh-title');
@@ -2511,32 +2755,32 @@ let propOpen = null;   // which picker is open
 function propsHtml(t) {
   const c = t.category && catById(t.category);
   return `<div class="sh-props">
-    <button class="prop" data-prop="doDay" title="Do day">${icon(t.doDay ? 'calendar' : 'inbox')} ${t.doDay ? fmt(t.doDay) : 'Inbox'}</button>
-    ${t.time ? `<button class="prop time" data-prop="time" title="Time">${t.time}</button>` : ''}
-    <button class="prop${t.deadline ? '' : ' empty'}" data-prop="deadline" title="Deadline">${icon('alarm')}${t.deadline ? ' ' + fmt(t.deadline) : ''}</button>
-    <button class="prop${c ? ' cat' : ' empty'}" data-prop="category" title="Category"${c ? ` style="--c:${c.color}"` : ''}>${icon('tag')}${c ? ' ' + esc(catPath(c.id)) : ''}</button>
-    <button class="prop${t.priority ? ' pri' + t.priority : ' empty'}" data-prop="priority" title="Priority">${icon('flag')}${t.priority ? ' ' + '!'.repeat(t.priority) : ''}</button>
+    <button class="prop" data-prop="doDay" title="${tr('Do day')}">${icon(t.doDay ? 'calendar' : 'inbox')} ${t.doDay ? fmtD(t.doDay) : tr('Inbox')}</button>
+    ${t.time ? `<button class="prop time" data-prop="time" title="${tr('Time')}">${t.time}</button>` : ''}
+    <button class="prop${t.deadline ? '' : ' empty'}" data-prop="deadline" title="${tr('Deadline')}">${icon('alarm')}${t.deadline ? ' ' + fmtD(t.deadline) : ''}</button>
+    <button class="prop${c ? ' cat' : ' empty'}" data-prop="category" title="${tr('Category')}"${c ? ` style="--c:${c.color}"` : ''}>${icon('tag')}${c ? ' ' + esc(catPath(c.id)) : ''}</button>
+    <button class="prop${t.priority ? ' pri' + t.priority : ' empty'}" data-prop="priority" title="${tr('Priority')}">${icon('flag')}${t.priority ? ' ' + '!'.repeat(t.priority) : ''}</button>
     ${propOpen ? propPopHtml(t, propOpen) : ''}
   </div>`;
 }
 function propPopHtml(t, which) {
   const T = todayKey();
-  if (which === 'doDay') return `<div class="prop-pop"><div class="pp-title">Do day</div>
-    <div class="pp-row"><button class="q" data-set="doDay" data-v="${T}">Today</button>
-      <button class="q" data-set="doDay" data-v="${addDays(T, 1)}">Tomorrow</button>
-      <button class="q" data-set="doDay" data-v="">Inbox (no date)</button></div>
+  if (which === 'doDay') return `<div class="prop-pop"><div class="pp-title">${tr('Do day')}</div>
+    <div class="pp-row"><button class="q" data-set="doDay" data-v="${T}">${tr('Today')}</button>
+      <button class="q" data-set="doDay" data-v="${addDays(T, 1)}">${tr('Tomorrow')}</button>
+      <button class="q" data-set="doDay" data-v="">${tr('Inbox (no date)')}</button></div>
     <div class="pp-row"><input type="date" data-pick="doDay" value="${t.doDay || ''}"></div></div>`;
-  if (which === 'time') return `<div class="prop-pop"><div class="pp-title">Time</div>
+  if (which === 'time') return `<div class="prop-pop"><div class="pp-title">${tr('Time')}</div>
     <div class="pp-row"><input type="time" data-pick="time" value="${t.time || ''}"></div>
-    <div class="pp-row"><button class="q" data-set="time" data-v="">Remove time</button></div></div>`;
-  if (which === 'deadline') return `<div class="prop-pop"><div class="pp-title">Deadline</div>
+    <div class="pp-row"><button class="q" data-set="time" data-v="">${tr('Remove time')}</button></div></div>`;
+  if (which === 'deadline') return `<div class="prop-pop"><div class="pp-title">${tr('Deadline')}</div>
     <div class="pp-row"><input type="date" data-pick="deadline" value="${t.deadline || ''}"></div>
-    ${t.deadline ? '<div class="pp-row"><button class="q" data-set="deadline" data-v="">Remove deadline</button></div>' : ''}</div>`;
-  if (which === 'category') return `<div class="prop-pop"><div class="pp-title">Category</div>
+    ${t.deadline ? `<div class="pp-row"><button class="q" data-set="deadline" data-v="">${tr('Remove deadline')}</button></div>` : ''}</div>`;
+  if (which === 'category') return `<div class="prop-pop"><div class="pp-title">${tr('Category')}</div>
     ${orderedCats().map(c => `<button class="cat-pick${c.parent ? ' child' : ''}${t.category === c.id ? ' on' : ''}" data-set="category" data-v="${c.id}" style="--c:${c.color}"><span class="sw"></span>${esc(c.name)}</button>`).join('')}
-    <button class="cat-pick" data-set="category" data-v="">— No category</button></div>`;
-  return `<div class="prop-pop"><div class="pp-title">Priority</div><div class="pp-row">${[0, 1, 2, 3].map(p =>
-    `<button class="q" data-set="priority" data-v="${p}">${p ? '!'.repeat(p) + ' ' : ''}${PRI[p]}</button>`).join('')}</div></div>`;
+    <button class="cat-pick" data-set="category" data-v="">${tr('— No category')}</button></div>`;
+  return `<div class="prop-pop"><div class="pp-title">${tr('Priority')}</div><div class="pp-row">${[0, 1, 2, 3].map(p =>
+    `<button class="q" data-set="priority" data-v="${p}">${p ? '!'.repeat(p) + ' ' : ''}${tr(PRI[p])}</button>`).join('')}</div></div>`;
 }
 
 // Changes from the panel: save, redraw the lists and the panel
@@ -2589,7 +2833,7 @@ sheetBody.addEventListener('keydown', e => {
     const t = !e.isComposing && commitDraft(draft);
     if (!t) return;
     const wasFull = sheet.classList.contains('full');
-    openNewTask('✓ Added to ' + whereText(t));
+    openNewTask(tr('✓ Added to {where}', { where: whereText(t) }));
     if (wasFull) setFull(true);   // stay full screen for the next task
     return;
   }
@@ -2675,11 +2919,11 @@ $('#sheet .sheet-top').addEventListener('click', e => {
     const copy = { ...t, id: uid(), text: t.text + ' (copy)', done: false, doneAt: null, createdAt: Date.now(),
                    subtasks: (t.subtasks || []).map(s => ({ ...s, id: uid() })) };
     flushText(); change(() => data.tasks.push(copy));
-    toast('Task duplicated', true);
+    toast(tr('Task duplicated'), true);
   }
-  if (act === 'to-inbox') { sheetChange(() => { findTask(id).doDay = null; }); toast('Moved to Inbox', true); }
+  if (act === 'to-inbox') { sheetChange(() => { findTask(id).doDay = null; }); toast(tr('Moved to Inbox'), true); }
   if (act === 'delete') {
-    if (!confirm('Delete this task?')) return;
+    if (!confirm(tr('Delete this task?'))) return;
     closeSheet(); deleteTask(id);
   }
 });
@@ -2695,7 +2939,7 @@ document.querySelectorAll('dialog').forEach(d => d.addEventListener('mousedown',
   const r = d.getBoundingClientRect();
   if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
   if (d.id === 'aiDlg' && (aiTasks.length || $('#aiAnswer').value.trim()) &&
-      !confirm('Close the AI box? Tasks you have not added yet will be lost.')) return;
+      !confirm(tr('Close the AI box? Tasks you have not added yet will be lost.'))) return;
   d.close();
 }));
 
@@ -2705,14 +2949,14 @@ function renderCatDlg() {
   $('#catList').innerHTML = orderedCats().map(c =>
     `<div class="cat-item${c.parent ? ' child' : ''}" data-id="${c.id}">
        <div class="cat-row">
-         <button type="button" class="swatch" data-act="palette" style="--c:${c.color}" title="Change color"></button>
-         <input value="${esc(c.name)}" aria-label="Category name">
-         <button type="button" class="remove" data-act="delete" title="Delete">×</button>
+         <button type="button" class="swatch" data-act="palette" style="--c:${c.color}" title="${tr('Change color')}"></button>
+         <input value="${esc(c.name)}" aria-label="${tr('Category name')}">
+         <button type="button" class="remove" data-act="delete" title="${tr('Delete')}">×</button>
        </div>
        <div class="palette" hidden>${PALETTE.map(p =>
          `<button type="button" class="swatch${p === c.color ? ' on' : ''}" data-act="color" data-color="${p}" style="--c:${p}"></button>`).join('')}</div>
      </div>`).join('');
-  $('#catParent').innerHTML = '<option value="">Top level</option>' +
+  $('#catParent').innerHTML = `<option value="">${tr('Top level')}</option>` +
     data.categories.filter(c => !c.parent).map(c => `<option value="${c.id}">Inside ${esc(c.name)}</option>`).join('');
 }
 function openCats() { renderCatDlg(); catDlg.showModal(); }
@@ -2774,16 +3018,16 @@ async function copyText(text) {
 function renderAiPreview() {
   $('#aiStep3').hidden = !aiTasks.length;
   $('#aiAdd').disabled = !aiTasks.length;
-  $('#aiAdd').textContent = aiTasks.length ? `Add all (${aiTasks.length})` : 'Add all';
+  $('#aiAdd').textContent = aiTasks.length ? tr('Add all ({n})', { n: aiTasks.length }) : tr('Add all');
   $('#aiPreview').innerHTML = aiTasks.map((p, i) =>
     `<li><div class="body"><div>${esc(p.text)}</div><div class="meta">${previewChips(p)}</div></div>
-       <button data-i="${i}" title="Remove">×</button></li>`).join('');
+       <button data-i="${i}" title="${tr('Remove')}">×</button></li>`).join('');
 }
 function parseAiAnswer() {
   const T = todayKey();
   aiTasks = aiLines($('#aiAnswer').value).map(l => parseInput(l, data.categories, T)).filter(p => p.text);
   renderAiPreview();
-  if (!aiTasks.length && $('#aiAnswer').value.trim()) toast('No tasks found in this answer');
+  if (!aiTasks.length && $('#aiAnswer').value.trim()) toast(tr('No tasks found in this answer'));
 }
 
 function openAi(text) {
@@ -2792,13 +3036,13 @@ function openAi(text) {
 }
 $('#aiCopy').addEventListener('click', async () => {
   const list = $('#aiList').value.trim();
-  if (!list) { toast('Please write your list first'); $('#aiList').focus(); return; }
+  if (!list) { toast(tr('Please write your list first')); $('#aiList').focus(); return; }
   const prompt = aiPrompt(list);
   const copied = await copyText(prompt);
   window.open('https://claude.ai/new?q=' + encodeURIComponent(prompt), '_blank');
   $('#aiCopyNote').textContent = copied
-    ? 'Copied ✓ Claude opened in a new tab. If the message box is empty, press ⌘V, then Enter.'
-    : 'Claude opened in a new tab. Copying failed, so please copy your list there by hand.';
+    ? tr('Copied ✓ Claude opened in a new tab. If the message box is empty, press ⌘V, then Enter.')
+    : tr('Claude opened in a new tab. Copying failed, so please copy your list there by hand.');
   $('#aiAnswer').focus();
 });
 $('#aiParse').addEventListener('click', parseAiAnswer);
@@ -2825,7 +3069,7 @@ function exportData() {
   a.download = 'todo-backup-' + todayKey() + '.json';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  toast('Backup saved to your Downloads folder');
+  toast(tr('Backup saved to your Downloads folder'));
 }
 $('#importFile').addEventListener('change', e => {
   const file = e.target.files[0]; if (!file) return;
@@ -2834,10 +3078,10 @@ $('#importFile').addEventListener('change', e => {
     try {
       const d = JSON.parse(reader.result);
       if (!Array.isArray(d.tasks) || !Array.isArray(d.categories)) throw new Error('bad file');
-      if (!confirm(`Import ${d.tasks.length} tasks? This replaces your current tasks.`)) return;
+      if (!confirm(tr('Import {n} tasks? This replaces your current tasks.', { n: d.tasks.length }))) return;
       change(() => { data = Object.assign(withColors(d), { deleted: data.deleted, gmap: data.gmap, google: data.google }); });
-      toast('Backup imported', true);
-    } catch (err) { toast('⚠️ This file is not a valid backup'); }
+      toast(tr('Backup imported'), true);
+    } catch (err) { toast(tr('⚠️ This file is not a valid backup')); }
   };
   reader.readAsText(file);
   e.target.value = '';
@@ -3077,13 +3321,13 @@ function cloudChanged() {
 }
 
 async function signIn() {
-  if (location.protocol === 'file:') return toast('Sign-in works on the online version: sophianguyen125.github.io/mytodo');
-  if (!gReady()) return toast('Cannot reach Google. Please check your internet connection.');
+  if (location.protocol === 'file:') return toast(tr('Sign-in works on the online version: sophianguyen125.github.io/mytodo'));
+  if (!gReady()) return toast(tr('Cannot reach Google. Please check your internet connection.'));
   try {
     const r = await requestToken('select_account');
     if (!google.accounts.oauth2.hasGrantedAllScopes(r, SCOPE_DRIVE)) {
       gToken = null;
-      return toast('Please allow Mytodo to save to your Google Drive');
+      return toast(tr('Please allow Mytodo to save to your Google Drive'));
     }
     const me = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + gToken } }).then(x => x.json());
     ui.google = { email: me.email, name: me.name || me.email, picture: me.picture || '', calendar: false };
@@ -3091,21 +3335,21 @@ async function signIn() {
     gState = 'ok'; driveFileId = null; showGbar();
     renderLeft(); renderAcctPop();
     await syncNow();   // merges this device's tasks with the ones saved in Google
-    toast('Signed in ✓ Your tasks are saved in your Google account');
+    toast(tr('Signed in ✓ Your tasks are saved in your Google account'));
   } catch (e) {
-    toast('Sign-in was cancelled');
+    toast(tr('Sign-in was cancelled'));
   }
 }
 
 async function connectScript(box) {
   const url = box.querySelector('.sf-url').value.trim(), key = box.querySelector('.sf-key').value.trim();
-  if (!/^https:\/\/script\.google\.com\/(a\/[\w.-]+\/)?macros\/s\/[\w-]+\/exec$/.test(url)) return toast('Please paste the script\'s web address (it ends with /exec)');
-  if (!key) return toast('Please paste your secret key');
+  if (!/^https:\/\/script\.google\.com\/(a\/[\w.-]+\/)?macros\/s\/[\w-]+\/exec$/.test(url)) return toast(tr("Please paste the script's web address (it ends with /exec)"));
+  if (!key) return toast(tr('Please paste your secret key'));
   let hello;
   try { hello = await fetch(url, { method: 'POST', body: JSON.stringify({ key, op: 'hello' }) }).then(x => x.json()); }
-  catch (e) { return toast('Cannot reach the script. Please check the address and your internet.'); }
-  if (hello.status === 403) return toast('This key is not right. Please check it.');
-  if (hello.status !== 200) return toast('The script answered: ' + (hello.error || hello.status));
+  catch (e) { return toast(tr('Cannot reach the script. Please check the address and your internet.')); }
+  if (hello.status === 403) return toast(tr('This key is not right. Please check it.'));
+  if (hello.status !== 200) return toast(tr('The script answered: {x}', { x: hello.error || hello.status }));
   const same = ui.google && ui.google.script;   // only the key changed: keep the Calendar choice
   ui.google = { script: url, key, email: hello.body.email, name: 'Own script · ' + hello.body.name, picture: '',
                 calendar: same ? !!ui.google.calendar : false };
@@ -3114,7 +3358,7 @@ async function connectScript(box) {
   gState = 'ok'; driveFileId = null; showGbar();
   renderLeft(); renderAcctPop();
   await syncNow();   // merges this device's tasks with the ones the script keeps
-  toast('Connected ✓ Your own script now saves your tasks');
+  toast(tr('Connected ✓ Your own script now saves your tasks'));
 }
 
 async function reconnect() {
@@ -3136,13 +3380,13 @@ async function setCalendar(on) {
       }
       setG('ok');
       await syncNow();
-      toast('Linked ✓ Tasks with a do day now appear in Google Calendar');
+      toast(tr('Linked ✓ Tasks with a do day now appear in Google Calendar'));
     } catch (e) {
       ui.google.calendar = false; saveUi();
-      toast('Calendar link was not allowed');
+      toast(tr('Calendar link was not allowed'));
     }
   } else {
-    toast('Calendar link turned off. Tasks already in Google Calendar stay there.');
+    toast(tr('Calendar link turned off. Tasks already in Google Calendar stay there.'));
   }
   renderLeft(); renderAcctPop();
 }
@@ -3158,7 +3402,7 @@ function signOut(keep) {
     save();
   }
   render(); renderAcctPop();
-  toast(keep ? 'Signed out. Your tasks stay on this device.' : 'Signed out. Tasks removed from this device.');
+  toast(tr(keep ? 'Signed out. Your tasks stay on this device.' : 'Signed out. Tasks removed from this device.'));
 }
 $('#outKeep').addEventListener('click', () => signOut(true));
 $('#outRemove').addEventListener('click', () => signOut(false));
@@ -3166,39 +3410,39 @@ $('#outCancel').addEventListener('click', () => $('#outDlg').close());
 
 function ago(ts) {
   const s = Math.round((Date.now() - ts) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return Math.round(s / 60) + ' min ago';
-  return Math.round(s / 3600) + ' h ago';
+  if (s < 60) return tr('just now');
+  if (s < 3600) return tr('{n} min ago', { n: Math.round(s / 60) });
+  return tr('{n} h ago', { n: Math.round(s / 3600) });
 }
 function statusText() {
-  if (gState === 'saving') return 'Saving…';
-  if (gState === 'offline') return 'Offline – will save later';
-  if (gState === 'error') return 'Google problem – trying again';
-  if (gState === 'paused') return 'Paused – <button class="link-btn" data-act="reconnect">Reconnect</button>';
-  if (gState === 'badkey') return 'Key not accepted – <button class="link-btn" data-act="script-form">Enter it again</button>';
-  return 'Saved ✓ ' + (lastSaved ? ago(lastSaved) : '');
+  if (gState === 'saving') return tr('Saving…');
+  if (gState === 'offline') return tr('Offline – will save later');
+  if (gState === 'error') return tr('Google problem – trying again');
+  if (gState === 'paused') return tr('Paused – ') + `<button class="link-btn" data-act="reconnect">${tr('Reconnect')}</button>`;
+  if (gState === 'badkey') return tr('Key not accepted – ') + `<button class="link-btn" data-act="script-form">${tr('Enter it again')}</button>`;
+  return tr('Saved ✓') + ' ' + (lastSaved ? ago(lastSaved) : '');
 }
 function scriptFormHtml() {
   return `<div class="script-form">
-      <input class="sf-url" placeholder="Script web address (…/exec)" autocomplete="off" spellcheck="false" value="${esc(ui.google && ui.google.script || '')}">
-      <input class="sf-key" type="password" placeholder="Secret key" autocomplete="off">
-      <div class="row"><button class="btn" data-act="script-connect">Connect</button>
-        <button class="link-btn" data-act="script-form">Cancel</button></div>
-      <p class="acct-note">Your own Google Apps Script saves your tasks. It never asks you to sign in again.</p></div>`;
+      <input class="sf-url" placeholder="${tr('Script web address (…/exec)')}" autocomplete="off" spellcheck="false" value="${esc(ui.google && ui.google.script || '')}">
+      <input class="sf-key" type="password" placeholder="${tr('Secret key')}" autocomplete="off">
+      <div class="row"><button class="btn" data-act="script-connect">${tr('Connect')}</button>
+        <button class="link-btn" data-act="script-form">${tr('Cancel')}</button></div>
+      <p class="acct-note">${tr('Your own Google Apps Script saves your tasks. It never asks you to sign in again.')}</p></div>`;
 }
 function accountHtml() {
   if (!ui.google) return `<div class="acct">
-      <button class="btn google-btn" data-act="signin">${G_LOGO} Sign in with Google</button>
-      <p class="acct-note">Sign in to keep your tasks safe and use them on all your devices.</p>
-      ${scriptForm ? scriptFormHtml() : '<button class="link-btn acct-alt" data-act="script-form">Or use your own script (key)</button>'}</div>`;
+      <button class="btn google-btn" data-act="signin">${G_LOGO} ${tr('Sign in with Google')}</button>
+      <p class="acct-note">${tr('Sign in to keep your tasks safe and use them on all your devices.')}</p>
+      ${scriptForm ? scriptFormHtml() : `<button class="link-btn acct-alt" data-act="script-form">${tr('Or use your own script (key)')}</button>`}</div>`;
   const g = ui.google;
   return `<div class="acct">
       <div class="acct-me">${g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : `<span class="avatar">${esc((g.name || '?')[0])}</span>`}
         <div class="acct-id"><b>${esc(g.name)}</b><span>${esc(g.email)}</span></div></div>
       <div class="acct-status s-${gState}">${statusText()}</div>
       ${scriptForm && g.script ? scriptFormHtml() : ''}
-      <label class="acct-cal"><input type="checkbox" data-act="calendar" ${g.calendar ? 'checked' : ''}> Link to Google Calendar</label>
-      <button class="link-btn" data-act="signout">Sign out</button></div>`;
+      <label class="acct-cal"><input type="checkbox" data-act="calendar" ${g.calendar ? 'checked' : ''}> ${tr('Link to Google Calendar')}</label>
+      <button class="link-btn" data-act="signout">${tr('Sign out')}</button></div>`;
 }
 function setG(state) {
   gState = state;
@@ -3258,23 +3502,25 @@ function renderScreen() {
   if (!$('#tabbar')) return;
   const g = ui.google;
   const me = g && g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : icon('user');
-  $('#tabbar').innerHTML = [['tasks', icon('list'), 'Tasks'], ['inbox', icon('inbox'), 'Inbox'], ['done', icon('check'), 'Done'], ['me', me, 'Settings']]
+  $('#tabbar').innerHTML = [['tasks', icon('list'), tr('Tasks')], ['inbox', icon('inbox'), tr('Inbox')], ['done', icon('check'), tr('Done')], ['me', me, tr('Settings')]]
     .map(([k, ic, label]) => `<div role="button" tabindex="0" data-screen="${k}" class="tab${screen === k ? ' on' : ''}"${DROP_TABS[k] ? ` data-drop="${DROP_TABS[k]}"` : ''}>${ic}<span>${label}</span>${TICK}</div>`).join('');   // not <button>: a label inside a button gets no tap
   // On the phone the screens next to this one show while swiping, so they are always drawn
   if (screen === 'done' || NARROW.matches) $('#doneScreen').innerHTML = doneHtml();
   if (screen === 'me' || NARROW.matches) renderMe();
 }
 function renderMe() {
-  $('#meScreen').innerHTML = `<h1 class="screen-title">Settings</h1>
+  $('#meScreen').innerHTML = `<h1 class="screen-title">${tr('Settings')}</h1>
     <div class="me-card">${accountHtml()}</div>
-    <div class="me-section">Theme</div>
+    <div class="me-section">${tr('Theme')}</div>
     <div class="me-card">${themeSummaryHtml()}${themeOpen ? themeChoicesHtml() : ''}</div>
-    <div class="me-section">Sound</div>
-    <div class="me-card"><button class="me-row" data-act="sound">${icon(ui.sound === false ? 'bellOff' : 'bell')} Sound when a task is done <b>${ui.sound === false ? 'Off' : 'On'}</b></button></div>
-    <div class="me-section">Categories</div>
-    <div class="me-card">${tagListHtml()}<button class="me-row" data-act="edit-cats">${icon('pencil')} Edit categories</button></div>
-    <div class="me-section">Backup</div>
-    <div class="me-card"><button class="me-row" data-act="export">${icon('download')} Export</button><button class="me-row" data-act="import">${icon('upload')} Import</button></div>`;
+    <div class="me-section">${tr('Language')}</div>
+    <div class="me-card">${langRowsHtml()}</div>
+    <div class="me-section">${tr('Sound')}</div>
+    <div class="me-card"><button class="me-row" data-act="sound">${icon(ui.sound === false ? 'bellOff' : 'bell')} ${tr('Sound when a task is done')} <b>${tr(ui.sound === false ? 'Off' : 'On')}</b></button></div>
+    <div class="me-section">${tr('Categories')}</div>
+    <div class="me-card">${tagListHtml()}<button class="me-row" data-act="edit-cats">${icon('pencil')} ${tr('Edit categories')}</button></div>
+    <div class="me-section">${tr('Backup')}</div>
+    <div class="me-card"><button class="me-row" data-act="export">${icon('download')} ${tr('Export')}</button><button class="me-row" data-act="import">${icon('upload')} ${tr('Import')}</button></div>`;
 }
 // After the tap, so the bar is redrawn only once the tap reached the haptic switch
 $('#tabbar').addEventListener('click', e => { const b = e.target.closest('[data-screen]'); if (b) setTimeout(() => setScreen(b.dataset.screen)); });
@@ -3460,10 +3706,7 @@ if (viaScript()) gState = 'ok';
 else if (pass) { gToken = pass.t; gTokenExp = pass.exp; gState = 'ok'; }
 else if (ui.google) gState = 'paused';
 showGbar();
-$('#aiTitle').insertAdjacentHTML('afterbegin', icon('sparkle'));
-$('#mDup').innerHTML = icon('copy') + ' Duplicate';
-$('#mInbox').innerHTML = icon('inbox') + ' Move to Inbox';
-$('#mDel').innerHTML = icon('trash') + ' Delete';
+translateStatic();
 applyTheme();
 render();
 if (pass) syncNow();
