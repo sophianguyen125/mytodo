@@ -676,17 +676,27 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
 .gbar #gbarX { font-size: 18px; line-height: 1; }
 
 /* Bottom bar (phone or narrow window) */
+/* Floating capsule in the middle, see-through; a lighter pill slides to the selected tab */
 .tabbar {
-  display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 26; justify-content: space-around;
-  background: color-mix(in srgb, var(--panel) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  display: none; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 26;
+  width: min(400px, calc(100vw - 24px)); padding: 6px; border-radius: 30px; border: 1px solid var(--line); box-shadow: var(--shadow-lg);
+  background: color-mix(in srgb, var(--panel) 72%, transparent); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}
+.tab-row { display: flex; width: 100%; position: relative; z-index: 1; }
+.tab-pill {
+  position: absolute; top: 6px; bottom: 6px; left: 6px; width: calc((100% - 12px) / 4); border-radius: 24px;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  transform: translateX(calc(var(--t, 0) * 100%)); transition: transform .38s cubic-bezier(.3, 1.35, .5, 1);
 }
 .tabbar .tab {
   flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 3px 0; font-size: 11px; color: var(--muted);
+  padding: 6px 0 5px; font-size: 11px; color: var(--muted); -webkit-tap-highlight-color: transparent;
+  transition: transform .18s cubic-bezier(.3, 1.6, .5, 1);
 }
-.tabbar .ic { width: 24px; height: 24px; filter: grayscale(1); opacity: .5; transition: opacity .15s, filter .15s; }
-.tabbar img { width: 24px; height: 24px; border-radius: 50%; opacity: .6; }
+.tabbar .tab:active { transform: scale(.86); transition-duration: .08s; }
+.tabbar .ic { width: 30px; height: 30px; filter: grayscale(1); opacity: .5; transition: opacity .15s, filter .15s; }
+.tabbar .ic .sym { transform: scale(.68); }
+.tabbar img { width: 30px; height: 30px; border-radius: 50%; opacity: .6; }
 .tabbar .tab.on { color: var(--text); font-weight: 600; }
 .tabbar .tab.on .ic { filter: none; opacity: 1; }
 .tabbar .tab.on img { opacity: 1; box-shadow: 0 0 0 2px var(--accent); }
@@ -768,8 +778,8 @@ dialog textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
   .col-right { padding: 30px 24px 150px; }
   .col-screen { padding: 30px 24px 150px; }
   .tabbar { display: flex; }
-  .fab { bottom: calc(76px + env(safe-area-inset-bottom)); }
-  .toast, .gbar { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .fab { bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .toast, .gbar { bottom: calc(96px + env(safe-area-inset-bottom)); }
   .col-right .head { margin-left: 2px; }
   .col-right .group { min-height: 0; }
   .col-right .task { padding: 12px 14px 12px 16px; font-size: 15px; }
@@ -3593,7 +3603,10 @@ function renderScreen() {
   if (!$('#tabbar')) return;
   const g = ui.google;
   const me = g && g.picture ? `<img src="${esc(g.picture)}" alt="" referrerpolicy="no-referrer">` : icon('user');
-  $('#tabbar').innerHTML = [['tasks', icon('list'), tr('Tasks')], ['inbox', icon('inbox'), tr('Inbox')], ['done', icon('check'), tr('Done')], ['me', me, tr('Settings')]]
+  // The pill stays the same element, so it can slide; only the four buttons are drawn again
+  if (!$('#tabbar .tab-row')) $('#tabbar').innerHTML = '<span class="tab-pill" aria-hidden="true"></span><div class="tab-row"></div>';
+  $('#tabbar').style.setProperty('--t', Math.max(0, SCREENS.indexOf(screen)));
+  $('#tabbar .tab-row').innerHTML = [['tasks', icon('list'), tr('Tasks')], ['inbox', icon('inbox'), tr('Inbox')], ['done', icon('check'), tr('Done')], ['me', me, tr('Settings')]]
     .map(([k, ic, label]) => `<div role="button" tabindex="0" data-screen="${k}" class="tab${screen === k ? ' on' : ''}"${DROP_TABS[k] ? ` data-drop="${DROP_TABS[k]}"` : ''}>${ic}<span>${label}</span>${TICK}</div>`).join('');   // not <button>: a label inside a button gets no tap
   // On the phone the screens next to this one show while swiping, so they are always drawn
   if (screen === 'done' || NARROW.matches) $('#doneScreen').innerHTML = doneHtml();
